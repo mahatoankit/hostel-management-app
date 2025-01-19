@@ -125,18 +125,11 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## 🙏 Acknowledgments
-
-- Inspired by the need to modernize hostel management systems.
-- Special thanks to [Your Team/Organization] for their support.
-
----
-
 ## 📧 Contact
 
 For any queries or feedback, feel free to reach out:
 - **Ankit Mahato**  
-- Email: your.email@example.com  
+- Email: chaudhryankit848@gmail.com  
 - GitHub: [mahatoankit](https://github.com/mahatoankit)  
 - LinkedIn: [Your LinkedIn Profile]  
 
