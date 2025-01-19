@@ -1,4 +1,3 @@
-```markdown
 # Hostel Management App 🏠
 
 Welcome to the **Hostel Management App**, a modern and efficient solution designed to replace the traditional paper-based hostel registry system. This app digitizes hostel management, making it easier for administrators to manage hostellers and for students to access their information seamlessly.
