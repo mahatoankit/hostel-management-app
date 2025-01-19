@@ -142,10 +142,6 @@ For any queries or feedback, feel free to reach out:
 
 ---
 
-```
-
----
-
 ### **How to Use This Template**
 1. Replace placeholders (e.g., `your.email@example.com`, `your_db_username`, `your_db_password`) with your actual details.
 2. Add screenshots of your app to the `screenshots/` folder and update the paths in the `Screenshots` section.
