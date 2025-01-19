@@ -1,0 +1,13 @@
+{
+    "editor.cursorSmoothCaretAnimation": "on",
+    "terminal.integrated.automationProfile.linux": {
+
+    },
+    "terminal.explorerKind": "external",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "java.debug.settings.console": "internalConsole",
+    "terminal.integrated.wordSeparators": " ()[]{}',\"`─‘’“”|",
+    "code-runner.runInTerminal": true,
+    "terminal.integrated.tabs.defaultColor": "terminal.ansiBlack",
+    "terminal.sourceControlRepositoriesKind": "both"
+}
