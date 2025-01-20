@@ -15,7 +15,7 @@ Welcome to the **Hostel Management App**, a modern and efficient solution design
 - **Reports and Analytics**: Generate reports for attendance, occupancy, and other metrics.
 - **User Roles**:
   - **Admin**: Manage hostel operations, view reports, and handle complaints.
-  - **Student**: Check room details, submit complaints, and view attendance.
+  - **Hostellers**: Check room details, submit complaints, and view payment details.
 
 ---
 
@@ -35,7 +35,7 @@ Welcome to the **Hostel Management App**, a modern and efficient solution design
 - **Backend**: PHP
 - **Database**: MySQL
 - **Authentication**: Session-based authentication
-- **Deployment**: Hosted on [Your Hosting Platform, e.g., Apache, XAMPP, or any cloud service]
+- **Deployment**: Hosted on LAMPP
 
 ---
 
@@ -43,10 +43,11 @@ Welcome to the **Hostel Management App**, a modern and efficient solution design
 
 ![Check-In Page](screenshots/checkin.png)
 *Digital Check-In Interface*
+[Image loading soon]
 
 ![Room Allocation](screenshots/room-allocation.png)
 *Room Allocation Dashboard*
-
+[Images loading soon]
 ---
 
 ## 🚀 Getting Started
