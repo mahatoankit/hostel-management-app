@@ -56,6 +56,7 @@ Welcome to the **Hostel Management App**, a modern and efficient solution design
 - MySQL installed
 - Apache or any web server
 - Git installed
+- XAMPP if windowsOS | LAMPP is linux based OS
 
 ### Installation
 1. Clone the repository:
