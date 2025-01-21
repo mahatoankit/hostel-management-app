@@ -1,11 +1,13 @@
 <?php
 session_start();
 
+// Redirect if the user is not logged in or not a hosteller
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
     header("Location: ../../auth/login.php");
     exit();
 }
 
+// Include necessary models
 require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
@@ -44,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         .complaint-section { margin-top: 2rem; }
         .complaint-card { margin-bottom: 1rem; }
         .vote-buttons { display: flex; gap: 10px; }
+        .vote-counts { font-weight: 500; margin-right: 15px; }
+        .complaint-card .card-body { padding: 1.25rem; }
+        .complaint-card .small { font-size: 0.875em; }
     </style>
 </head>
 <body>
@@ -53,7 +58,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         
         <!-- Dashboard Cards -->
         <div class="row g-4">
-            <!-- Cards remain the same as before -->
+            <!-- Profile Card -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Profile</h5>
+                        <p class="card-text">View and update your profile information.</p>
+                        <a href="profile.php" class="btn btn-primary">Go to Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Details Card -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Room Details</h5>
+                        <p class="card-text">Check your room details and roommates.</p>
+                        <a href="room_details.php" class="btn btn-primary">View Room Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notices Card -->
+            <div class="col-md-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Notices</h5>
+                        <p class="card-text">Read the latest notices and announcements.</p>
+                        <a href="notices.php" class="btn btn-primary">View Notices</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Complaint Section -->
@@ -86,17 +122,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                 <?php foreach ($complaints as $complaint): ?>
                     <div class="card complaint-card">
                         <div class="card-body">
-                            <h5 class="card-title"><?php echo htmlspecialchars($complaint['complaintType']); ?></h5>
-                            <p class="card-text"><?php echo htmlspecialchars($complaint['description']); ?></p>
-                            <div class="vote-buttons">
-                                <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
-                                   class="btn btn-success btn-sm">
-                                   Upvote <?php echo $complaint['Upvotes']; ?>
-                                </a>
-                                <a href="../../models/complaintVote.php?action=downvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
-                                   class="btn btn-danger btn-sm">
-                                   Downvote <?php echo $complaint['Downvotes']; ?>
-                                </a>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="card-title"><?php echo htmlspecialchars($complaint['complaintType']); ?></h5>
+                                    <p class="card-text"><?php echo htmlspecialchars($complaint['description']); ?></p>
+                                </div>
+                                <div class="text-muted small">
+                                    Posted by: <?php echo htmlspecialchars($complaint['firstName'].' '.$complaint['lastName']); ?>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="vote-counts">
+                                    <span class="text-success">↑ <?php echo $complaint['Upvotes']; ?></span>
+                                    <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span>
+                                </div>
+                                <div class="vote-buttons">
+                                    <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                       class="btn btn-success btn-sm">
+                                       Upvote
+                                    </a>
+                                    <a href="../../models/complaintVote.php?action=downvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                       class="btn btn-danger btn-sm">
+                                       Downvote
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
