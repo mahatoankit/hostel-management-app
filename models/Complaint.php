@@ -17,5 +17,6 @@ class Complaint {
         $stmt->bind_param("iss", $hostellerId, $title, $description);
         return $stmt->execute();
     }
+    
 }
 ?>
