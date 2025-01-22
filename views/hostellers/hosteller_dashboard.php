@@ -118,10 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
             </div>
 
             <!-- Complaints List -->
-             Debugger: <?php 
-             
-             print_r($complaints);
-             ?>
             <?php if (!empty($complaints)): ?>
                 <?php foreach ($complaints as $complaint): ?>
                     <div class="card complaint-card">
@@ -138,11 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                             
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="vote-counts">
-                                    <!-- <span class="text-success">↑ <?php echo $complaint['Upvotes']; ?></span>
-                                    <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span> -->
-
-                                    Votes: <?php echo $complaint['Upvotes'] - $complaint['Downvotes']; ?>
-
+                                    <span class="text-success">↑ <?php echo $complaint['Upvotes']; ?></span>
+                                    <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span>
                                 </div>
                                 <div class="vote-buttons">
                                     <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
