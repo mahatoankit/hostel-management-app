@@ -13,13 +13,13 @@
                 <!-- Login Link (Visible when user is not logged in) -->
                 <?php if (!isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="auth/login.php">Login</a>
+                        <a class="nav-link" href="../auth/login.php">Login</a>
                     </li>
                 <?php endif; ?>
                 <!-- Logout Link (Visible when user is logged in) -->
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="auth/logout.php">Logout</a>
+                        <a class="nav-link" href="../auth/logout.php">Logout</a>
                     </li>
                 <?php endif; ?>
             </ul>

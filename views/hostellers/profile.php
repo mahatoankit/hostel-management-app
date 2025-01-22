@@ -11,9 +11,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
     exit();
 }
 
-// Debug: Check session user ID
-echo "Session User ID: " . $_SESSION['user_id'];
-
 // Database connection
 require_once __DIR__ . '/../../models/Database.php';
 
@@ -23,11 +20,6 @@ try {
     $stmt = $db->prepare("SELECT * FROM hostellers WHERE hostellerID = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Debug: Check fetched user data
-    // echo "<pre>";
-    // print_r($user);
-    // echo "</pre>";
 
     if (!$user) {
         die("User not found in database.");
@@ -63,39 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (PDOException $e) {
         $error = "Error updating profile: " . $e->getMessage();
-    }
-}
-
-// Handle password change
-$passwordError = $passwordSuccess = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
-    try {
-        $currentPassword = $_POST['current_password'];
-        $newPassword = $_POST['new_password'];
-        $confirmPassword = $_POST['confirm_password'];
-
-        // Fetch current password hash from the database
-        $stmt = $db->prepare("SELECT password FROM hostellers WHERE hostellerID = ?");
-        $stmt->execute([$_SESSION['user_id']]);
-        $storedPassword = $stmt->fetchColumn();
-
-        // Verify current password
-        if (!password_verify($currentPassword, $storedPassword)) {
-            $passwordError = "Current password is incorrect.";
-        } elseif ($newPassword !== $confirmPassword) {
-            $passwordError = "New passwords do not match.";
-        } else {
-            // Hash the new password
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-
-            // Update password in the database
-            $stmt = $db->prepare("UPDATE hostellers SET password = ? WHERE hostellerID = ?");
-            $stmt->execute([$hashedPassword, $_SESSION['user_id']]);
-            $passwordSuccess = "Password updated successfully!";
-        }
-
-    } catch (PDOException $e) {
-        $passwordError = "Error updating password: " . $e->getMessage();
     }
 }
 ?>
@@ -154,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 <?php endif; ?>
 
                 <form method="POST">
-                    <!-- Read-only fields -->
+                    <!-- Read-only Hosteller ID field -->
                     <div class="mb-3">
                         <label class="form-label">Hosteller ID</label>
                         <input type="text" class="form-control" 
@@ -209,38 +168,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     </div>
                 </form>
 
-                <!-- Password Change Section -->
+                <!-- Password Change Button -->
                 <div class="password-section">
-                    <h3>Change Password</h3>
-                    <?php if ($passwordError): ?>
-                        <div class="alert alert-danger"><?= $passwordError ?></div>
-                    <?php endif; ?>
-                    <?php if ($passwordSuccess): ?>
-                        <div class="alert alert-success"><?= $passwordSuccess ?></div>
-                    <?php endif; ?>
-
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" name="current_password" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">New Password</label>
-                            <input type="password" name="new_password" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" name="confirm_password" class="form-control" required>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" name="change_password" class="btn btn-warning">
-                                <i class="fas fa-key me-2"></i>Change Password
-                            </button>
-                        </div>
-                    </form>
+                    <div class="d-grid gap-2">
+                        <a href="passwordChange.php" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
