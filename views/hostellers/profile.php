@@ -91,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .password-section {
             margin-top: 2rem;
         }
+        .cancel-change-btn {
+            display: none; /* Initially hidden */
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -112,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert-success"><?= $success ?></div>
                 <?php endif; ?>
 
-                <form method="POST">
+                <form id="profileForm" method="POST">
                     <!-- Read-only Hosteller ID field -->
                     <div class="mb-3">
                         <label class="form-label">Hosteller ID</label>
@@ -166,6 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <i class="fas fa-save me-2"></i>Update Profile
                         </button>
                     </div>
+
+                    <!-- Cancel Change Button -->
+                    <div class="d-grid gap-2 cancel-change-btn">
+                        <button type="button" id="cancelChangeBtn" class="btn btn-secondary">
+                            <i class="fas fa-undo me-2"></i>Cancel Change
+                        </button>
+                    </div>
                 </form>
 
                 <!-- Password Change Button -->
@@ -181,5 +192,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Store original form values
+        const originalValues = {
+            firstName: "<?= htmlspecialchars($user['firstName'] ?? '') ?>",
+            lastName: "<?= htmlspecialchars($user['lastName'] ?? '') ?>",
+            email: "<?= htmlspecialchars($user['hostellersEmail'] ?? '') ?>",
+            phone: "<?= htmlspecialchars($user['phoneNumber'] ?? '') ?>",
+            address: "<?= htmlspecialchars($user['address'] ?? '') ?>",
+            diet: "<?= htmlspecialchars($user['dietaryPreference'] ?? '') ?>"
+        };
+
+        // Function to check if any field has been changed
+        function checkForChanges() {
+            const form = document.getElementById('profileForm');
+            const cancelChangeBtn = document.querySelector('.cancel-change-btn');
+            let isChanged = false;
+
+            // Check each field
+            if (form.firstName.value !== originalValues.firstName ||
+                form.lastName.value !== originalValues.lastName ||
+                form.email.value !== originalValues.email ||
+                form.phone.value !== originalValues.phone ||
+                form.address.value !== originalValues.address ||
+                form.diet.value !== originalValues.diet) {
+                isChanged = true;
+            }
+
+            // Show/hide the Cancel Change button
+            cancelChangeBtn.style.display = isChanged ? 'block' : 'none';
+        }
+
+        // Function to reset form to original values
+        function resetForm() {
+            const form = document.getElementById('profileForm');
+            form.firstName.value = originalValues.firstName;
+            form.lastName.value = originalValues.lastName;
+            form.email.value = originalValues.email;
+            form.phone.value = originalValues.phone;
+            form.address.value = originalValues.address;
+            form.diet.value = originalValues.diet;
+
+            // Hide the Cancel Change button after resetting
+            document.querySelector('.cancel-change-btn').style.display = 'none';
+        }
+
+        // Add event listeners to form fields
+        const formFields = document.querySelectorAll('#profileForm input, #profileForm textarea, #profileForm select');
+        formFields.forEach(field => {
+            field.addEventListener('input', checkForChanges);
+        });
+
+        // Add event listener to Cancel Change button
+        document.getElementById('cancelChangeBtn').addEventListener('click', resetForm);
+    </script>
 </body>
 </html>

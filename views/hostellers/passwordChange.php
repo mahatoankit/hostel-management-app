@@ -125,6 +125,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </button>
                     </div>
                 </form>
+
+                <!-- Back to Profile Button -->
+                <div class="d-grid gap-2 mt-3">
+                    <a href="profile.php" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Profile
+                    </a>
+                </div>
             </div>
         </div>
     </div>
