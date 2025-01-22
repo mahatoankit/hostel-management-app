@@ -11,15 +11,23 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
     exit();
 }
 
-// Database connection - Adjusted relative path
+// Debug: Check session user ID
+echo "Session User ID: " . $_SESSION['user_id'];
+
+// Database connection
 require_once __DIR__ . '/../../models/Database.php';
 
 try {
     // Fetch user data
     $db = Database::getConnection();
-    $stmt = $db->prepare("SELECT * FROM hostellers WHERE userID = ?");
+    $stmt = $db->prepare("SELECT * FROM hostellers WHERE hostellerID = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Debug: Check fetched user data
+    // echo "<pre>";
+    // print_r($user);
+    // echo "</pre>";
 
     if (!$user) {
         die("User not found in database.");
@@ -34,24 +42,60 @@ $error = $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Sanitize inputs
-        $phone = htmlspecialchars($_POST['phone']);
-        $address = htmlspecialchars($_POST['address']);
-        $diet = htmlspecialchars($_POST['diet']);
+        $firstName = htmlspecialchars($_POST['firstName'] ?? '');
+        $lastName = htmlspecialchars($_POST['lastName'] ?? '');
+        $email = htmlspecialchars($_POST['email'] ?? '');
+        $phone = htmlspecialchars($_POST['phone'] ?? '');
+        $address = htmlspecialchars($_POST['address'] ?? '');
+        $diet = htmlspecialchars($_POST['diet'] ?? '');
 
-        // Update query
+        // Update query for profile details
         $stmt = $db->prepare("UPDATE hostellers 
-                            SET phoneNumber = ?, address = ?, dietaryPreference = ?
-                            WHERE userID = ?");
-        $stmt->execute([$phone, $address, $diet, $_SESSION['user_id']]);
+                            SET firstName = ?, lastName = ?, hostellersEmail = ?, phoneNumber = ?, address = ?, dietaryPreference = ?
+                            WHERE hostellerID = ?");
+        $stmt->execute([$firstName, $lastName, $email, $phone, $address, $diet, $_SESSION['user_id']]);
         $success = "Profile updated successfully!";
 
         // Refresh user data
-        $stmt = $db->prepare("SELECT * FROM hostellers WHERE userID = ?");
+        $stmt = $db->prepare("SELECT * FROM hostellers WHERE hostellerID = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     } catch (PDOException $e) {
         $error = "Error updating profile: " . $e->getMessage();
+    }
+}
+
+// Handle password change
+$passwordError = $passwordSuccess = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+    try {
+        $currentPassword = $_POST['current_password'];
+        $newPassword = $_POST['new_password'];
+        $confirmPassword = $_POST['confirm_password'];
+
+        // Fetch current password hash from the database
+        $stmt = $db->prepare("SELECT password FROM hostellers WHERE hostellerID = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $storedPassword = $stmt->fetchColumn();
+
+        // Verify current password
+        if (!password_verify($currentPassword, $storedPassword)) {
+            $passwordError = "Current password is incorrect.";
+        } elseif ($newPassword !== $confirmPassword) {
+            $passwordError = "New passwords do not match.";
+        } else {
+            // Hash the new password
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+            // Update password in the database
+            $stmt = $db->prepare("UPDATE hostellers SET password = ? WHERE hostellerID = ?");
+            $stmt->execute([$hashedPassword, $_SESSION['user_id']]);
+            $passwordSuccess = "Password updated successfully!";
+        }
+
+    } catch (PDOException $e) {
+        $passwordError = "Error updating password: " . $e->getMessage();
     }
 }
 ?>
@@ -85,17 +129,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .profile-details {
             padding: 2rem;
         }
+        .password-section {
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
-    <?php require "../partials/_nav.php"; ?>
+    <?php require "../../partials/_nav.php"; ?>
 
     <div class="container">
         <div class="card profile-card">
             <div class="profile-header">
                 <i class="fas fa-user-circle profile-icon"></i>
-                <h2><?= htmlspecialchars($user['firstName'] . ' ' . $user['lastName']) ?></h2>
-                <p class="mb-0"><?= htmlspecialchars($user['hostellersEmail']) ?></p>
+                <h2><?= htmlspecialchars($user['firstName'] ?? '') . ' ' . htmlspecialchars($user['lastName'] ?? '') ?></h2>
+                <p class="mb-0"><?= htmlspecialchars($user['hostellersEmail'] ?? '') ?></p>
             </div>
 
             <div class="profile-details">
@@ -111,41 +158,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="mb-3">
                         <label class="form-label">Hosteller ID</label>
                         <input type="text" class="form-control" 
-                               value="<?= htmlspecialchars($user['hostellerID']) ?>" readonly>
+                               value="<?= htmlspecialchars($user['hostellerID'] ?? '') ?>" readonly>
                     </div>
                     
+                    <!-- Editable fields -->
                     <div class="mb-3">
                         <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" 
-                               value="<?= htmlspecialchars($user['firstName']) ?>" readonly>
+                        <input type="text" name="firstName" class="form-control" 
+                               value="<?= htmlspecialchars($user['firstName'] ?? '') ?>" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" 
-                               value="<?= htmlspecialchars($user['lastName']) ?>" readonly>
+                        <input type="text" name="lastName" class="form-control" 
+                               value="<?= htmlspecialchars($user['lastName'] ?? '') ?>" required>
                     </div>
 
-                    <!-- Editable fields -->
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" 
+                               value="<?= htmlspecialchars($user['hostellersEmail'] ?? '') ?>" required>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Phone Number</label>
                         <input type="tel" name="phone" class="form-control" 
-                               value="<?= htmlspecialchars($user['phoneNumber']) ?>" required>
+                               value="<?= htmlspecialchars($user['phoneNumber'] ?? '') ?>" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Address</label>
                         <textarea name="address" class="form-control" rows="3" required><?= 
-                            htmlspecialchars($user['address']) ?></textarea>
+                            htmlspecialchars($user['address'] ?? '') ?></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Dietary Preference</label>
                         <select name="diet" class="form-select" required>
-                            <option value="Vegetarian" <?= $user['dietaryPreference'] === 'Vegetarian' ? 'selected' : '' ?>>Vegetarian</option>
-                            <option value="Non-Vegetarian" <?= $user['dietaryPreference'] === 'Non-Vegetarian' ? 'selected' : '' ?>>Non-Vegetarian</option>
-                            <option value="Vegan" <?= $user['dietaryPreference'] === 'Vegan' ? 'selected' : '' ?>>Vegan</option>
-                            <option value="Others" <?= $user['dietaryPreference'] === 'Others' ? 'selected' : '' ?>>Others</option>
+                            <option value="Vegetarian" <?= ($user['dietaryPreference'] ?? '') === 'Vegetarian' ? 'selected' : '' ?>>Vegetarian</option>
+                            <option value="Non-Vegetarian" <?= ($user['dietaryPreference'] ?? '') === 'Non-Vegetarian' ? 'selected' : '' ?>>Non-Vegetarian</option>
+                            <option value="Vegan" <?= ($user['dietaryPreference'] ?? '') === 'Vegan' ? 'selected' : '' ?>>Vegan</option>
+                            <option value="Others" <?= ($user['dietaryPreference'] ?? '') === 'Others' ? 'selected' : '' ?>>Others</option>
                         </select>
                     </div>
 
@@ -155,6 +208,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </button>
                     </div>
                 </form>
+
+                <!-- Password Change Section -->
+                <div class="password-section">
+                    <h3>Change Password</h3>
+                    <?php if ($passwordError): ?>
+                        <div class="alert alert-danger"><?= $passwordError ?></div>
+                    <?php endif; ?>
+                    <?php if ($passwordSuccess): ?>
+                        <div class="alert alert-success"><?= $passwordSuccess ?></div>
+                    <?php endif; ?>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" name="current_password" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="new_password" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="change_password" class="btn btn-warning">
+                                <i class="fas fa-key me-2"></i>Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
