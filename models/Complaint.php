@@ -13,8 +13,7 @@ class Complaint {
                 ORDER BY complaints.postingDate DESC;
             ");
             $stmt->execute();
-            $result = $stmt->get_result();
-            return $result->fetch_all(MYSQLI_ASSOC); // Fetch as associative array
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch as associative array
         } catch (Exception $e) {
             error_log("Error fetching complaints: " . $e->getMessage());
             return [];
@@ -26,8 +25,7 @@ class Complaint {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("INSERT INTO complaints (hostellerId, title, description) VALUES (?, ?, ?)");
-            $stmt->bind_param("iss", $hostellerId, $title, $description);
-            return $stmt->execute();
+            return $stmt->execute([$hostellerId, $title, $description]);
         } catch (Exception $e) {
             error_log("Error posting complaint: " . $e->getMessage());
             return false;

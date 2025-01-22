@@ -4,24 +4,27 @@ class Database {
 
     public static function getConnection() {
         if (self::$connection === null) {
-            // Database credentials
             $host = "localhost";
             $username = "root";
             $password = ""; // Add your MySQL password here if applicable
             $database = "ankitMahato24128422"; // Correct database name
 
-            // Create connection
-            self::$connection = new mysqli($host, $username, $password, $database);
+            try {
+                // Create PDO connection
+                self::$connection = new PDO(
+                    "mysql:host=$host;dbname=$database",
+                    $username,
+                    $password
+                );
 
-            // Check connection
-            if (self::$connection->connect_error) {
-                die("Connection failed: " . self::$connection->connect_error);
+                // Set PDO to throw exceptions on errors
+                self::$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            } catch (PDOException $e) {
+                die("Connection failed: " . $e->getMessage());
             }
         }
         return self::$connection;
     }
 }
-
-// Test the connection
-$conn = Database::getConnection();
 ?>
