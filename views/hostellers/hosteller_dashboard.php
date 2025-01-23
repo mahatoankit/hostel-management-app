@@ -16,10 +16,11 @@ $complaints = $complaintModel->getAllComplaints();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
     $title = htmlspecialchars($_POST['title']);
     $description = htmlspecialchars($_POST['description']);
+    $visibility = htmlspecialchars($_POST['visibility'] ?? 'private'); // Default to private
     $hostellerId = $_SESSION['user_id'];
 
     if (!empty($title) && !empty($description)) {
-        if ($complaintModel->postComplaint($hostellerId, $title, $description)) {
+        if ($complaintModel->postComplaint($hostellerId, $title, $description, $visibility)) {
             header("Location: hosteller_dashboard.php");
             exit();
         } else {
@@ -101,17 +102,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                 <div class="card-body">
                     <h5 class="card-title">Post a Complaint</h5>
                     <?php if (isset($error)): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
+                        <!-- Dismissible Error Alert -->
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <?php echo $error; ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     <?php endif; ?>
                     <form method="POST">
+                        <!-- Title Field -->
                         <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
                             <input type="text" class="form-control" id="title" name="title" required>
                         </div>
+
+                        <!-- Description Field -->
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                         </div>
+
+                        <!-- Visibility Dropdown -->
+                        <div class="mb-3">
+                            <label for="visibility" class="form-label">Visibility</label>
+                            <select class="form-select" id="visibility" name="visibility" required>
+                                <option value="private" selected>Private (Only visible to admins)</option>
+                                <option value="public">Public (Visible to everyone)</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit Button -->
                         <button type="submit" name="post_complaint" class="btn btn-primary">Post Complaint</button>
                     </form>
                 </div>
