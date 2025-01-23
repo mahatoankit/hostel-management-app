@@ -14,20 +14,25 @@ $complaints = $complaintModel->getAllComplaints();
 
 // Handle complaint posting
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
-    $title = htmlspecialchars($_POST['title']);
+    $complaintType = htmlspecialchars($_POST['complaintType']);
     $description = htmlspecialchars($_POST['description']);
-    $visibility = htmlspecialchars($_POST['visibility'] ?? 'private'); // Default to private
-    $hostellerId = $_SESSION['user_id'];
+    $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Private
+    $userID = $_SESSION['user_id'];
 
-    if (!empty($title) && !empty($description)) {
-        if ($complaintModel->postComplaint($hostellerId, $title, $description, $visibility)) {
+    if (!empty($complaintType) && !empty($description)) {
+        // Validate visibility input
+        $allowedVisibilities = ['Private', 'Public'];
+        if (!in_array($visibility, $allowedVisibilities)) {
+            $visibility = 'Private'; // Fallback to default
+        }
+        if ($complaintModel->postComplaint($userID[-1], $complaintType, $description, $visibility)) {
             header("Location: hosteller_dashboard.php");
             exit();
         } else {
             $error = "Failed to post complaint. Please try again.";
         }
     } else {
-        $error = "Title and description are required.";
+        $error = "Complaint type and description are required.";
     }
 }
 ?>
@@ -99,42 +104,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
 
             <!-- Post Complaint Form -->
             <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Post a Complaint</h5>
-                    <?php if (isset($error)): ?>
-                        <!-- Dismissible Error Alert -->
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <?php echo $error; ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-                    <form method="POST">
-                        <!-- Title Field -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
-                        </div>
-
-                        <!-- Description Field -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                        </div>
-
-                        <!-- Visibility Dropdown -->
-                        <div class="mb-3">
-                            <label for="visibility" class="form-label">Visibility</label>
-                            <select class="form-select" id="visibility" name="visibility" required>
-                                <option value="private" selected>Private (Only visible to admins)</option>
-                                <option value="public">Public (Visible to everyone)</option>
-                            </select>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" name="post_complaint" class="btn btn-primary">Post Complaint</button>
-                    </form>
-                </div>
+    <div class="card-body">
+        <h5 class="card-title">Post a Complaint</h5>
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo $error; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+        <?php endif; ?>
+        <form method="POST">
+            <!-- Complaint Type Field -->
+            <div class="mb-3">
+                <label for="complaintType" class="form-label">Complaint Type</label>
+                <input type="text" class="form-control" id="complaintType" name="complaintType" required>
+            </div>
+
+            <!-- Description Field -->
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+
+            <!-- Visibility Dropdown -->
+            <div class="mb-3">
+                <label for="visibility" class="form-label">Visibility</label>
+                <select class="form-select" id="visibility" name="visibility" required>
+                    <option value="Private" >Private (Only visible to admin)</option>
+                    <option value="Public" selected>Public (Visible to everyone)</option>
+                </select>
+            </div>
+
+            <button type="submit" name="post_complaint" class="btn btn-primary">Post Complaint</button>
+        </form>
+    </div>
+</div>
 
             <!-- Complaints List -->
             <?php if (!empty($complaints)): ?>

@@ -21,11 +21,13 @@ class Complaint {
     }
 
     // Post a new complaint
-    public function postComplaint($hostellerId, $title, $description) {
+    public function postComplaint($userID, $complaintType, $description, $visibility) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("INSERT INTO complaints (hostellerId, title, description) VALUES (?, ?, ?)");
-            return $stmt->execute([$hostellerId, $title, $description]);
+            $stmt = $db->prepare("INSERT INTO complaints 
+                                (userID, complaintType, description, complaintStatus, postingDate, visibility) 
+                                VALUES (?, ?, ?, 'Open', CURDATE(), ?)");
+            return $stmt->execute([$userID, $complaintType, $description, $visibility]);
         } catch (Exception $e) {
             error_log("Error posting complaint: " . $e->getMessage());
             return false;
