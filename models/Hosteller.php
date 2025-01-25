@@ -73,13 +73,18 @@ class Hosteller {
     }
 
     // Get room details for a hosteller
-    public function getRoomDetails($hostellerId) {
+    public function getCurrentRoomDetails($userID) {
         try {
-            $stmt = $this->db->prepare("SELECT * FROM roomAllocation WHERE userID = ?;");
-            $stmt->execute([$hostellerId]);
+            $stmt = $this->db->prepare("
+                SELECT r.roomNumber, r.seaterNumber
+                FROM roomAllocation ra
+                JOIN rooms r ON ra.roomNumber = r.roomNumber
+                WHERE ra.userID = ? AND ra.deallocationDate IS NULL
+            ");
+            $stmt->execute([$userID]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Get room details error: " . $e->getMessage());
+            error_log("Error fetching current room details: ".$e->getMessage());
             return false;
         }
     }

@@ -50,6 +50,7 @@ if ($roomDetails) {
     </style>
 </head>
 <body>
+
     <?php require "../../partials/_nav.php"; ?>
     
     <div class="container mt-5">
