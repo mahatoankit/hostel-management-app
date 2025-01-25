@@ -79,7 +79,7 @@ class Hosteller {
                 SELECT r.roomNumber, r.seaterNumber
                 FROM roomAllocation ra
                 JOIN rooms r ON ra.roomNumber = r.roomNumber
-                WHERE ra.userID = ? AND ra.deallocationDate IS NULL
+                WHERE ra.userID = ?
             ");
             $stmt->execute([$userID]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -94,9 +94,9 @@ class Hosteller {
         try {
             $stmt = $this->db->prepare("
                 SELECT h.hostellerID, h.firstName, h.lastName, h.email, h.phoneNumber
-                FROM rooms r
-                JOIN hostellers h ON r.userID = h.hostellerID
-                WHERE r.roomNumber = ? AND r.userID != ?
+                FROM roomAllocation ra
+                JOIN hostellers h ON ra.userID = h.hostellerID
+                WHERE ra.roomNumber = ? AND ra.userID != ? AND ra.deallocationDate IS NULL
             ");
             $stmt->execute([$roomNumber, $excludeHostellerId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);

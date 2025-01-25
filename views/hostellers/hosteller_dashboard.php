@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         if (!in_array($visibility, $allowedVisibilities)) {
             $visibility = 'Private'; // Fallback to default
         }
-        if ($complaintModel->postComplaint($userID[-1], $complaintType, $description, $visibility)) {
+        if ($complaintModel->postComplaint($userID, $complaintType, $description, $visibility)) {
             header("Location: hosteller_dashboard.php");
             exit();
         } else {

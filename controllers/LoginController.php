@@ -74,7 +74,7 @@ function authenticateUser($conn, $email, $password, $table, $emailColumn, $passw
 
                 // Set user_id for both admin and hosteller
                 if ($userType === 'hosteller') {
-                    $_SESSION['user_id'] = $user['hostellerID']; // Corrected column name
+                    $_SESSION['user_id'] = $user['userID']; // Corrected column name
                 } else if ($userType === 'admin') {
                     $_SESSION['user_id'] = $user['adminID']; // Adjust if needed
                 }

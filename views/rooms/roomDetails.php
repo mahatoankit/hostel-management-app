@@ -15,12 +15,16 @@ $hostellerModel = new Hosteller($db);
 
 // Get current hosteller's room details
 $currentHostellerId = $_SESSION['user_id'];
-$roomDetails = $hostellerModel->getRoomDetails($currentHostellerId);
+$roomDetails = $hostellerModel->getCurrentRoomDetails($currentHostellerId);
 $roommates = [];
 
 if ($roomDetails) {
     // Get all roommates excluding current user
     $roommates = $hostellerModel->getRoommates($roomDetails['roomNumber'], $currentHostellerId);
+
+    // Calculate allocated and unallocated seaters
+    $allocatedSeaters = count($roommates) + 1; // Include the current user
+    $unallocatedSeaters = $roomDetails['seaterNumber'] - $allocatedSeaters;
 }
 ?>
 
@@ -47,58 +51,91 @@ if ($roomDetails) {
             border-radius: 15px 15px 0 0;
             padding: 1.5rem;
         }
+        .allocation-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .roommate-details-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body>
-
     <?php require "../../partials/_nav.php"; ?>
-    
+    <h1>Debugger</h1>
+    <?php
+    echo "<pre>"; // Use <pre> for better readability
+    print_r($roommates);
+    echo "</pre>";
+    ?>
     <div class="container mt-5">
         <?php if (!$roomDetails): ?>
             <div class="alert alert-warning">
                 You are not currently assigned to any room.
             </div>
         <?php else: ?>
-            <div class="card mb-4">
-                <div class="room-header">
-                    <h3 class="mb-0">Room <?= htmlspecialchars($roomDetails['roomNumber']) ?></h3>
-                    <p class="mb-0">Capacity: <?= htmlspecialchars($roomDetails['seaterNumber']) ?> seater</p>
+            <!-- Room Allocation Card -->
+            <div class="card allocation-card">
+                <h3 class="mb-3">You are allocated to Room <?= htmlspecialchars($roomDetails['roomNumber']) ?></h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0"><strong>Total Capacity:</strong> <?= htmlspecialchars($roomDetails['seaterNumber']) ?> seater(s)</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-0"><strong>Allocated Seaters:</strong> <?= htmlspecialchars($allocatedSeaters) ?></p>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <p class="mb-0"><strong>Unallocated Seaters:</strong> <?= htmlspecialchars($unallocatedSeaters) ?></p>
+                    </div>
                 </div>
             </div>
 
-            <h4 class="mb-4">Roommates</h4>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <?php if (empty($roommates)): ?>
-                    <div class="col">
-                        <div class="alert alert-info">
-                            No other roommates currently assigned to this room.
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($roommates as $roommate): ?>
+            <!-- Roommate Details Section -->
+            <div class="card roommate-details-card">
+                <h4 class="mb-4">Roommate Details</h4>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <?php if (empty($roommates)): ?>
                         <div class="col">
-                            <div class="card roommate-card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <?= htmlspecialchars($roommate['firstName'] . ' ' . $roommate['lastName']) ?>
-                                    </h5>
-                                    <p class="card-text">
-                                        <i class="fas fa-envelope me-2"></i>
-                                        <?= htmlspecialchars($roommate['email']) ?>
-                                    </p>
-                                    <p class="card-text">
-                                        <i class="fas fa-phone me-2"></i>
-                                        <?= htmlspecialchars($roommate['phoneNumber']) ?>
-                                    </p>
-                                    <p class="card-text">
-                                        <i class="fas fa-home me-2"></i>
-                                        Room <?= htmlspecialchars($roomDetails['roomNumber']) ?>
-                                    </p>
-                                </div>
+                            <div class="alert alert-info">
+                                No other roommates currently assigned to this room.
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <?php foreach ($roommates as $roommate): ?>
+                            <div class="col">
+                                <div class="card roommate-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <?= htmlspecialchars($roommate['firstName'] . ' ' . $roommate['lastName']) ?>
+                                        </h5>
+                                        <p class="card-text">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            <?= htmlspecialchars($roommate['email']) ?>
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="fas fa-phone me-2"></i>
+                                            <?= htmlspecialchars($roommate['phoneNumber']) ?>
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="fas fa-home me-2"></i>
+                                            Room <?= htmlspecialchars($roomDetails['roomNumber']) ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php endif; ?>
     </div>

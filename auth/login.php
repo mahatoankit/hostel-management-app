@@ -21,6 +21,11 @@
           <div class="card">
             <div class="card-header text-center">
               <h3>Login</h3>
+              <?php
+              echo "<pre>";
+              print_r($_SESSION['user_id']);
+              echo "</pre>";
+              ?>
             </div>
             <div class="card-body">
                 
@@ -31,6 +36,7 @@
               <?php endif; ?>
 
               <div class="d-flex justify-content-center mb-3">
+                
                 <button id="hosteller-login-btn" class="btn btn-outline-primary me-2 active">Login as Hosteller</button>
                 <button id="admin-login-btn" class="btn btn-outline-primary">Login as Admin</button>
               </div>
