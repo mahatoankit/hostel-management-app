@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                     <div class="card-body text-center">
                         <h5 class="card-title">Room Details</h5>
                         <p class="card-text">Check your room details and roommates.</p>
-                        <a href="room_details.php" class="btn btn-primary">View Room Details</a>
+                        <a href="../rooms/roomDetails.php" class="btn btn-primary">View Room Details</a>
                     </div>
                 </div>
             </div>
