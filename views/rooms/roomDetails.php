@@ -35,56 +35,75 @@ if ($roomDetails) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Room Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
         .roommate-card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s;
+            background-color: #ffffff;
         }
         .roommate-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         .room-header {
-            background: #007bff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
             border-radius: 15px 15px 0 0;
-            padding: 1.5rem;
+            padding: 2rem;
+            text-align: center;
         }
         .allocation-card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
+            padding: 2rem;
             margin-bottom: 2rem;
             text-align: center;
+            background-color: #ffffff;
         }
         .roommate-details-card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
+            padding: 2rem;
             margin-bottom: 2rem;
+            background-color: #ffffff;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+        .card-text {
+            color: #6c757d;
+        }
+        .fa-icon {
+            color: #007bff;
+        }
+        .alert-custom {
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <?php require "../../partials/_nav.php"; ?>
-    <h1>Debugger</h1>
-    <?php
-    echo "<pre>"; // Use <pre> for better readability
-    print_r($roommates);
-    echo "</pre>";
-    ?>
     <div class="container mt-5">
         <?php if (!$roomDetails): ?>
-            <div class="alert alert-warning">
+            <div class="alert alert-warning alert-custom">
                 You are not currently assigned to any room.
             </div>
         <?php else: ?>
             <!-- Room Allocation Card -->
             <div class="card allocation-card">
-                <h3 class="mb-3">You are allocated to Room <?= htmlspecialchars($roomDetails['roomNumber']) ?></h3>
+                <h3 class="mb-4">You are allocated to Room <?= htmlspecialchars($roomDetails['roomNumber']) ?></h3>
                 <div class="row">
                     <div class="col-md-6">
                         <p class="mb-0"><strong>Total Capacity:</strong> <?= htmlspecialchars($roomDetails['seaterNumber']) ?> seater(s)</p>
@@ -93,7 +112,7 @@ if ($roomDetails) {
                         <p class="mb-0"><strong>Allocated Seaters:</strong> <?= htmlspecialchars($allocatedSeaters) ?></p>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="row mt-3">
                     <div class="col-md-6">
                         <p class="mb-0"><strong>Unallocated Seaters:</strong> <?= htmlspecialchars($unallocatedSeaters) ?></p>
                     </div>
@@ -106,7 +125,7 @@ if ($roomDetails) {
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     <?php if (empty($roommates)): ?>
                         <div class="col">
-                            <div class="alert alert-info">
+                            <div class="alert alert-info alert-custom">
                                 No other roommates currently assigned to this room.
                             </div>
                         </div>
@@ -119,15 +138,15 @@ if ($roomDetails) {
                                             <?= htmlspecialchars($roommate['firstName'] . ' ' . $roommate['lastName']) ?>
                                         </h5>
                                         <p class="card-text">
-                                            <i class="fas fa-envelope me-2"></i>
-                                            <?= htmlspecialchars($roommate['email']) ?>
+                                            <i class="fas fa-envelope fa-icon me-2"></i>
+                                            <?= htmlspecialchars($roommate['hostellersEmail']) ?>
                                         </p>
                                         <p class="card-text">
-                                            <i class="fas fa-phone me-2"></i>
+                                            <i class="fas fa-phone fa-icon me-2"></i>
                                             <?= htmlspecialchars($roommate['phoneNumber']) ?>
                                         </p>
                                         <p class="card-text">
-                                            <i class="fas fa-home me-2"></i>
+                                            <i class="fas fa-home fa-icon me-2"></i>
                                             Room <?= htmlspecialchars($roomDetails['roomNumber']) ?>
                                         </p>
                                     </div>

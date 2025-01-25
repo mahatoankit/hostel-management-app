@@ -93,10 +93,7 @@ class Hosteller {
     public function getRoommates($roomNumber, $excludeHostellerId) {
         try {
             $stmt = $this->db->prepare("
-                SELECT h.hostellerID, h.firstName, h.lastName, h.email, h.phoneNumber
-                FROM roomAllocation ra
-                JOIN hostellers h ON ra.userID = h.hostellerID
-                WHERE ra.roomNumber = ? AND ra.userID != ? AND ra.deallocationDate IS NULL
+SELECT h.hostellerID, h.firstName, h.lastName, h.hostellersEmail, h.phoneNumber FROM roomAllocation ra JOIN hostellers h ON ra.userID = h.userID WHERE ra.roomNumber = ? AND ra.userID != ?;
             ");
             $stmt->execute([$roomNumber, $excludeHostellerId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
