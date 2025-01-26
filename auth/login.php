@@ -21,11 +21,7 @@
           <div class="card">
             <div class="card-header text-center">
               <h3>Login</h3>
-              <?php
-              echo "<pre>";
-              print_r($_SESSION['user_id']);
-              echo "</pre>";
-              ?>
+          
             </div>
             <div class="card-body">
                 
