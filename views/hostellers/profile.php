@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../models/Database.php';
 try {
     // Fetch user data
     $db = Database::getConnection();
-    $stmt = $db->prepare("SELECT * FROM hostellers WHERE hostellerID = ?");
+    $stmt = $db->prepare("SELECT * FROM hostellers WHERE userID = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Update query for profile details
         $stmt = $db->prepare("UPDATE hostellers 
                             SET firstName = ?, lastName = ?, hostellersEmail = ?, phoneNumber = ?, address = ?, dietaryPreference = ?
-                            WHERE hostellerID = ?");
+                            WHERE userID = ?");
         $stmt->execute([$firstName, $lastName, $email, $phone, $address, $diet, $_SESSION['user_id']]);
         $success = "Profile updated successfully!";
 
         // Refresh user data
-        $stmt = $db->prepare("SELECT * FROM hostellers WHERE hostellerID = ?");
+        $stmt = $db->prepare("SELECT * FROM hostellers WHERE userID = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="mb-3">
                         <label class="form-label">Hosteller ID</label>
                         <input type="text" class="form-control" 
-                               value="<?= htmlspecialchars($user['hostellerID'] ?? '') ?>" readonly>
+                               value="<?= htmlspecialchars($user['userID'] ?? '') ?>" readonly>
                     </div>
                     
                     <!-- Editable fields -->
