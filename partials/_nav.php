@@ -8,7 +8,7 @@
             <ul class="navbar-nav ms-auto"> <!-- Align items to the right -->
                 <!-- Home Link -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/index.php">Home</a>
+                    <a class="nav-link" href="/../hostel-management-app/">Home</a>
                 </li>
                 <!-- Login Link (Visible when user is not logged in) -->
                 <?php if (!isset($_SESSION['user_id'])): ?>
