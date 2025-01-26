@@ -6,7 +6,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto"> <!-- Align items to the right -->
-                <!-- Home Link -->
                 <li class="nav-item">
                     <a class="nav-link" href="/../hostel-management-app/">Home</a>
                 </li>
