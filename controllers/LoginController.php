@@ -87,7 +87,6 @@ function authenticateUser($conn, $email, $password, $table, $emailColumn, $passw
                 // Regenerate session ID to prevent session fixation
                 session_regenerate_id(true);
 
-                // Log successful login
                 error_log("Login successful for $userType, redirecting to $redirectPath");
 
                 // Redirect to the appropriate dashboard
