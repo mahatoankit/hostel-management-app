@@ -1,7 +1,7 @@
-<?php
-require_once __DIR__ . '/Database.php';
+<?php 
+require_once __DIR__ . '/Database.php'; 
 
-class ComplaintVote {
+class ComplaintVote { 
     private $voteID;
     private $complaintID;
     private $userID;
@@ -27,41 +27,57 @@ class ComplaintVote {
     public function upVote() {
         $db = Database::getConnection();
         
-        // Check existing vote
-        $stmt = $db->prepare("SELECT * FROM complaintVotes WHERE complaintID = ? AND userID = ?");
-        $stmt->execute([$this->complaintID, $this->userID]);
-        $existingVote = $stmt->fetch();
-
         try {
+            $db->beginTransaction();
+            
+            $stmt = $db->prepare("SELECT voteType FROM complaintVotes 
+                                WHERE complaintID = ? AND userID = ?
+                                FOR UPDATE");
+            $stmt->execute([$this->complaintID, $this->userID]);
+            $existingVote = $stmt->fetch(PDO::FETCH_ASSOC);
+
             if ($existingVote) {
-                if ($existingVote['voteType'] === 'upvote') {
-                    // If the user already upvoted, remove the upvote
-                    $stmt = $db->prepare("DELETE FROM complaintVotes WHERE complaintID = ? AND userID = ?");
-                    $stmt->execute([$this->complaintID, $this->userID]);
-
-                    // Update complaint counts: Decrease Upvotes
-                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1 WHERE complaintID = ?");
-                    $stmt->execute([$this->complaintID]);
+                if ($existingVote['voteType'] === 'Upvote') {
+                    // Remove upvote
+                    $db->prepare("DELETE FROM complaintVotes 
+                                WHERE complaintID = ? AND userID = ?")
+                       ->execute([$this->complaintID, $this->userID]);
+                    $db->prepare("UPDATE complaints 
+                                SET voteCount = voteCount - 1 
+                                WHERE complaintID = ?")
+                       ->execute([$this->complaintID]);
                 } else {
-                    // Update vote type to upvote
-                    $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'upvote' WHERE complaintID = ? AND userID = ?");
-                    $stmt->execute([$this->complaintID, $this->userID]);
-
-                    // Update complaint counts: Increase Upvotes, Decrease Downvotes
-                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1, Downvotes = Downvotes - 1 WHERE complaintID = ?");
-                    $stmt->execute([$this->complaintID]);
+                    // Change from Downvote to Upvote
+                    $db->prepare("UPDATE complaintVotes 
+                                SET voteType = 'Upvote' 
+                                WHERE complaintID = ? AND userID = ?")
+                       ->execute([$this->complaintID, $this->userID]);
+                    $db->prepare("UPDATE complaints 
+                                SET voteCount = voteCount + 2 
+                                WHERE complaintID = ?")
+                       ->execute([$this->complaintID]);
                 }
             } else {
-                // Insert a new upvote
-                $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'upvote')");
-                $stmt->execute([$this->complaintID, $this->userID]);
-
-                // Update complaint counts: Increase Upvotes
-                $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1 WHERE complaintID = ?");
-                $stmt->execute([$this->complaintID]);
+                // Add new upvote
+                $db->prepare("INSERT INTO complaintVotes 
+                            (complaintID, userID, voteType) 
+                            VALUES (?, ?, 'Upvote')")
+                   ->execute([$this->complaintID, $this->userID]);
+                $db->prepare("UPDATE complaints 
+                            SET voteCount = voteCount + 1 
+                            WHERE complaintID = ?")
+                   ->execute([$this->complaintID]);
             }
+            
+            $db->commit();
             return true;
+            
         } catch (PDOException $e) {
+            $db->rollBack();
+            if ($e->errorInfo[1] == 1062) {
+                error_log("Duplicate vote attempted");
+                return false;
+            }
             error_log("Upvote error: " . $e->getMessage());
             return false;
         }
@@ -70,42 +86,58 @@ class ComplaintVote {
     // Downvote functionality
     public function downVote() {
         $db = Database::getConnection();
-
-        // Check existing vote
-        $stmt = $db->prepare("SELECT * FROM complaintVotes WHERE complaintID = ? AND userID = ?");
-        $stmt->execute([$this->complaintID, $this->userID]);
-        $existingVote = $stmt->fetch();
-
+        
         try {
+            $db->beginTransaction();
+            
+            $stmt = $db->prepare("SELECT voteType FROM complaintVotes 
+                                WHERE complaintID = ? AND userID = ?
+                                FOR UPDATE");
+            $stmt->execute([$this->complaintID, $this->userID]);
+            $existingVote = $stmt->fetch(PDO::FETCH_ASSOC);
+
             if ($existingVote) {
-                if ($existingVote['voteType'] === 'downvote') {
-                    // If the user already downvoted, remove the downvote
-                    $stmt = $db->prepare("DELETE FROM complaintVotes WHERE complaintID = ? AND userID = ?");
-                    $stmt->execute([$this->complaintID, $this->userID]);
-
-                    // Update complaint counts: Decrease Downvotes
-                    $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes - 1 WHERE complaintID = ?");
-                    $stmt->execute([$this->complaintID]);
+                if ($existingVote['voteType'] === 'Downvote') {
+                    // Remove downvote
+                    $db->prepare("DELETE FROM complaintVotes 
+                                WHERE complaintID = ? AND userID = ?")
+                       ->execute([$this->complaintID, $this->userID]);
+                    $db->prepare("UPDATE complaints 
+                                SET voteCount = voteCount + 1 
+                                WHERE complaintID = ?")
+                       ->execute([$this->complaintID]);
                 } else {
-                    // Update vote type to downvote
-                    $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'downvote' WHERE complaintID = ? AND userID = ?");
-                    $stmt->execute([$this->complaintID, $this->userID]);
-
-                    // Update complaint counts: Decrease Upvotes, Increase Downvotes
-                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1, Downvotes = Downvotes + 1 WHERE complaintID = ?");
-                    $stmt->execute([$this->complaintID]);
+                    // Change from Upvote to Downvote
+                    $db->prepare("UPDATE complaintVotes 
+                                SET voteType = 'Downvote' 
+                                WHERE complaintID = ? AND userID = ?")
+                       ->execute([$this->complaintID, $this->userID]);
+                    $db->prepare("UPDATE complaints 
+                                SET voteCount = voteCount - 2 
+                                WHERE complaintID = ?")
+                       ->execute([$this->complaintID]);
                 }
             } else {
-                // Insert a new downvote
-                $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'downvote')");
-                $stmt->execute([$this->complaintID, $this->userID]);
-
-                // Update complaint counts: Increase Downvotes
-                $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes + 1 WHERE complaintID = ?");
-                $stmt->execute([$this->complaintID]);
+                // Add new downvote
+                $db->prepare("INSERT INTO complaintVotes 
+                            (complaintID, userID, voteType) 
+                            VALUES (?, ?, 'Downvote')")
+                   ->execute([$this->complaintID, $this->userID]);
+                $db->prepare("UPDATE complaints 
+                            SET voteCount = voteCount - 1 
+                            WHERE complaintID = ?")
+                   ->execute([$this->complaintID]);
             }
+            
+            $db->commit();
             return true;
+            
         } catch (PDOException $e) {
+            $db->rollBack();
+            if ($e->errorInfo[1] == 1062) {
+                error_log("Duplicate vote attempted");
+                return false;
+            }
             error_log("Downvote error: " . $e->getMessage());
             return false;
         }
@@ -114,19 +146,19 @@ class ComplaintVote {
     public static function getTotalVotesForComplaint($complaintID) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT Upvotes, Downvotes FROM complaints WHERE complaintID = ?");
+            $stmt = $db->prepare("SELECT voteCount FROM complaints WHERE complaintID = ?");
             $stmt->execute([$complaintID]);
-            return $stmt->fetch() ?: ['Upvotes' => 0, 'Downvotes' => 0];
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ? $result['voteCount'] : 0;
         } catch (PDOException $e) {
             error_log("Get votes error: " . $e->getMessage());
-            return ['Upvotes' => 0, 'Downvotes' => 0];
+            return 0;
         }
     }
 }
 
 // Handle voting request
 session_start();
-
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
     header("Location: ../../auth/login.php");
     exit();
@@ -140,12 +172,18 @@ if (isset($_GET['action'], $_GET['complaint_id'], $_GET['user_id'])) {
     $vote = new ComplaintVote(null, $complaintId, $userId);
     
     try {
+        $success = false;
         if ($action === 'upvote') {
-            $vote->upVote();
+            $success = $vote->upVote();
         } elseif ($action === 'downvote') {
-            $vote->downVote();
+            $success = $vote->downVote();
         }
-        header("Location: ../views/hostellers/hosteller_dashboard.php");
+        
+        if ($success) {
+            header("Location: ../views/hostellers/hosteller_dashboard.php");
+        } else {
+            header("Location: ../views/hostellers/hosteller_dashboard.php?error=vote_failed");
+        }
         exit();
     } catch (Exception $e) {
         die("Error processing vote: " . $e->getMessage());

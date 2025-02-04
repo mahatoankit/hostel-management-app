@@ -11,6 +11,11 @@ require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
 ?>
+<!-- <?php
+// echo "<pre>";
+// print_r($complaints);
+// echo "</pre>";
+?> -->
 
 <?php if (!empty($complaints)): ?>
     <?php foreach ($complaints as $complaint): ?>
@@ -28,8 +33,8 @@ $complaints = $complaintModel->getAllComplaints();
                 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="vote-counts">
-                        <span class="text-success">↑ <?php echo $complaint['Upvotes']; ?></span>
-                        <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span>
+                        <span class="text-success"> Vote Count: <?php echo $complaint['voteCount']; ?></span>
+                        <!-- <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span> -->
                     </div>
                     <div class="vote-buttons">
                         <a href="../../models/ComplaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
