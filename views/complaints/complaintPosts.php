@@ -18,11 +18,11 @@
                                     <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span>
                                 </div>
                                 <div class="vote-buttons">
-                                    <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                    <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaitID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
                                        class="btn btn-success btn-sm">
                                        Upvote
                                     </a>
-                                    <a href="../../models/complaintVote.php?action=downvote&complaint_id=<?php echo $complaint['id']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                    <a href="../../models/complaintVote.php?action=downvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
                                        class="btn btn-danger btn-sm">
                                        Downvote
                                     </a>
