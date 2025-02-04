@@ -42,7 +42,7 @@ class ComplaintVote {
                     $stmt->execute([$this->complaintID, $this->userID]);
 
                     // Update complaint counts
-                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1, Downvotes = Downvotes - 1 WHERE id = ?");
+                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1, Downvotes = Downvotes - 1 WHERE complaintID = ?");
                     $stmt->execute([$this->complaintID]);
                 }
             } else {
@@ -51,7 +51,7 @@ class ComplaintVote {
                 $stmt->execute([$this->complaintID, $this->userID]);
 
                 // Update complaint counts
-                $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1 WHERE id = ?");
+                $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1 WHERE complaitID = ?");
                 $stmt->execute([$this->complaintID]);
             }
             return true;
@@ -80,7 +80,7 @@ class ComplaintVote {
                     $stmt->execute([$this->complaintID, $this->userID]);
 
                     // Update complaint counts
-                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1, Downvotes = Downvotes + 1 WHERE id = ?");
+                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1, Downvotes = Downvotes + 1 WHERE complaintID = ?");
                     $stmt->execute([$this->complaintID]);
                 }
             } else {
@@ -89,7 +89,7 @@ class ComplaintVote {
                 $stmt->execute([$this->complaintID, $this->userID]);
 
                 // Update complaint counts
-                $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes + 1 WHERE id = ?");
+                $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes + 1 WHERE complaintID = ?");
                 $stmt->execute([$this->complaintID]);
             }
             return true;
@@ -102,7 +102,7 @@ class ComplaintVote {
     public static function getTotalVotesForComplaint($complaintID) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT Upvotes, Downvotes FROM complaints WHERE id = ?");
+            $stmt = $db->prepare("SELECT Upvotes, Downvotes FROM complaints WHERE complaintID = ?");
             $stmt->execute([$complaintID]);
             return $stmt->fetch() ?: ['Upvotes' => 0, 'Downvotes' => 0];
         } catch (PDOException $e) {
