@@ -28,7 +28,7 @@ class ComplaintVote {
         $db = Database::getConnection();
         
         // Check existing vote
-        $stmt = $db->prepare("SELECT * FROM complaint_votes WHERE complaintID = ? AND userID = ?");
+        $stmt = $db->prepare("SELECT * FROM complaintVotes WHERE complaintID = ? AND userID = ?");
         $stmt->execute([$this->complaintID, $this->userID]);
         $existingVote = $stmt->fetch();
 
@@ -38,7 +38,7 @@ class ComplaintVote {
                     return false;
                 } else {
                     // Update to upvote
-                    $stmt = $db->prepare("UPDATE complaint_votes SET voteType = 'upvote' WHERE complaintID = ? AND userID = ?");
+                    $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'upvote' WHERE complaintID = ? AND userID = ?");
                     $stmt->execute([$this->complaintID, $this->userID]);
 
                     // Update complaint counts
@@ -47,7 +47,7 @@ class ComplaintVote {
                 }
             } else {
                 // New upvote
-                $stmt = $db->prepare("INSERT INTO complaint_votes (complaintID, userID, voteType) VALUES (?, ?, 'upvote')");
+                $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'upvote')");
                 $stmt->execute([$this->complaintID, $this->userID]);
 
                 // Update complaint counts
@@ -66,7 +66,7 @@ class ComplaintVote {
         $db = Database::getConnection();
 
         // Check existing vote
-        $stmt = $db->prepare("SELECT * FROM complaint_votes WHERE complaintID = ? AND userID = ?");
+        $stmt = $db->prepare("SELECT * FROM complaintVotes WHERE complaintID = ? AND userID = ?");
         $stmt->execute([$this->complaintID, $this->userID]);
         $existingVote = $stmt->fetch();
 
@@ -76,7 +76,7 @@ class ComplaintVote {
                     return false;
                 } else {
                     // Update to downvote
-                    $stmt = $db->prepare("UPDATE complaint_votes SET voteType = 'downvote' WHERE complaintID = ? AND userID = ?");
+                    $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'downvote' WHERE complaintID = ? AND userID = ?");
                     $stmt->execute([$this->complaintID, $this->userID]);
 
                     // Update complaint counts
@@ -85,7 +85,7 @@ class ComplaintVote {
                 }
             } else {
                 // New downvote
-                $stmt = $db->prepare("INSERT INTO complaint_votes (complaintID, userID, voteType) VALUES (?, ?, 'downvote')");
+                $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'downvote')");
                 $stmt->execute([$this->complaintID, $this->userID]);
 
                 // Update complaint counts
@@ -133,7 +133,7 @@ if (isset($_GET['action'], $_GET['complaint_id'], $_GET['user_id'])) {
         } elseif ($action === 'downvote') {
             $vote->downVote();
         }
-        header("Location: ../../views/hosteller/hosteller_dashboard.php");
+        header("Location: ../views/hostellers/hosteller_dashboard.php");
         exit();
     } catch (Exception $e) {
         die("Error processing vote: " . $e->getMessage());
