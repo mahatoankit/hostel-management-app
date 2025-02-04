@@ -33,5 +33,18 @@ class Complaint {
             return false;
         }
     }
+
+    public function updateComplaintDetails($complaintID, $complaintType, $description, $visibility) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("UPDATE complaints 
+                                SET complaintType = ?, description = ?, visibility = ? 
+                                WHERE complaintID = ?");
+            return $stmt->execute([$complaintType, $description, $visibility, $complaintID]);
+        } catch (Exception $e) {
+            error_log("Error updating complaint: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>
