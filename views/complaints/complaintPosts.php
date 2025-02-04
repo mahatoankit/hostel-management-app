@@ -11,12 +11,6 @@ require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
 ?>
-<!-- <?php
-// echo "<pre>";
-// print_r($complaints);
-// echo "</pre>";
-?> -->
-
 <?php if (!empty($complaints)): ?>
     <?php foreach ($complaints as $complaint): ?>
         <div class="card complaint-card">
