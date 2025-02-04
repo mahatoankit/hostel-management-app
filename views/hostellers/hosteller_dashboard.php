@@ -90,9 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
             <div class="col-md-4">
                 <div class="card dashboard-card h-100">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Notices</h5>
-                        <p class="card-text">Read the latest notices and announcements.</p>
-                        <a href="notices.php" class="btn btn-primary">View Notices</a>
+                        <h5 class="card-title">Billing and Payments</h5>
+                        <p class="card-text">View and manage your hostel billing details.</p>
+                        <a href="../billing/billing.php" class="btn btn-primary">View Billing</a>
                     </div>
                 </div>
             </div>
