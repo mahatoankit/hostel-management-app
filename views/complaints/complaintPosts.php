@@ -28,7 +28,6 @@ $complaints = $complaintModel->getAllComplaints();
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="vote-counts">
                         <span class="text-success"> Vote Count: <?php echo $complaint['voteCount']; ?></span>
-                        <!-- <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span> -->
                     </div>
                     <div class="vote-buttons">
                         <a href="../../models/ComplaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
