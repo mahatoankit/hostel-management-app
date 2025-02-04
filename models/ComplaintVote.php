@@ -155,6 +155,27 @@ class ComplaintVote {
             return 0;
         }
     }
+    public function getUserVotes($userID) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("
+                SELECT complaintID, voteType 
+                FROM complaintVotes 
+                WHERE userID = ?
+            ");
+            $stmt->execute([$userID]);
+            
+            $votes = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $votes[$row['complaintID']] = $row['voteType'];
+            }
+            return $votes;
+            
+        } catch (PDOException $e) {
+            error_log("Error fetching user votes: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 
 // Handle voting request
