@@ -35,23 +35,29 @@ class ComplaintVote {
         try {
             if ($existingVote) {
                 if ($existingVote['voteType'] === 'upvote') {
-                    return false;
+                    // If the user already upvoted, remove the upvote
+                    $stmt = $db->prepare("DELETE FROM complaintVotes WHERE complaintID = ? AND userID = ?");
+                    $stmt->execute([$this->complaintID, $this->userID]);
+
+                    // Update complaint counts: Decrease Upvotes
+                    $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1 WHERE complaintID = ?");
+                    $stmt->execute([$this->complaintID]);
                 } else {
-                    // Update to upvote
+                    // Update vote type to upvote
                     $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'upvote' WHERE complaintID = ? AND userID = ?");
                     $stmt->execute([$this->complaintID, $this->userID]);
 
-                    // Update complaint counts
+                    // Update complaint counts: Increase Upvotes, Decrease Downvotes
                     $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1, Downvotes = Downvotes - 1 WHERE complaintID = ?");
                     $stmt->execute([$this->complaintID]);
                 }
             } else {
-                // New upvote
+                // Insert a new upvote
                 $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'upvote')");
                 $stmt->execute([$this->complaintID, $this->userID]);
 
-                // Update complaint counts
-                $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1 WHERE complaitID = ?");
+                // Update complaint counts: Increase Upvotes
+                $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes + 1 WHERE complaintID = ?");
                 $stmt->execute([$this->complaintID]);
             }
             return true;
@@ -73,22 +79,28 @@ class ComplaintVote {
         try {
             if ($existingVote) {
                 if ($existingVote['voteType'] === 'downvote') {
-                    return false;
+                    // If the user already downvoted, remove the downvote
+                    $stmt = $db->prepare("DELETE FROM complaintVotes WHERE complaintID = ? AND userID = ?");
+                    $stmt->execute([$this->complaintID, $this->userID]);
+
+                    // Update complaint counts: Decrease Downvotes
+                    $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes - 1 WHERE complaintID = ?");
+                    $stmt->execute([$this->complaintID]);
                 } else {
-                    // Update to downvote
+                    // Update vote type to downvote
                     $stmt = $db->prepare("UPDATE complaintVotes SET voteType = 'downvote' WHERE complaintID = ? AND userID = ?");
                     $stmt->execute([$this->complaintID, $this->userID]);
 
-                    // Update complaint counts
+                    // Update complaint counts: Decrease Upvotes, Increase Downvotes
                     $stmt = $db->prepare("UPDATE complaints SET Upvotes = Upvotes - 1, Downvotes = Downvotes + 1 WHERE complaintID = ?");
                     $stmt->execute([$this->complaintID]);
                 }
             } else {
-                // New downvote
+                // Insert a new downvote
                 $stmt = $db->prepare("INSERT INTO complaintVotes (complaintID, userID, voteType) VALUES (?, ?, 'downvote')");
                 $stmt->execute([$this->complaintID, $this->userID]);
 
-                // Update complaint counts
+                // Update complaint counts: Increase Downvotes
                 $stmt = $db->prepare("UPDATE complaints SET Downvotes = Downvotes + 1 WHERE complaintID = ?");
                 $stmt->execute([$this->complaintID]);
             }
@@ -141,4 +153,3 @@ if (isset($_GET['action'], $_GET['complaint_id'], $_GET['user_id'])) {
 } else {
     die("Invalid request parameters.");
 }
-?>

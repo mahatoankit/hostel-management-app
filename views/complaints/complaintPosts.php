@@ -1,5 +1,13 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../../auth/login.php");
+    exit();
+}
+
+// Include the Complaint model to fetch complaint posts
 require_once __DIR__ . '/../../models/Complaint.php';
+
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
 ?>
@@ -24,11 +32,11 @@ $complaints = $complaintModel->getAllComplaints();
                         <span class="text-danger ms-2">↓ <?php echo $complaint['Downvotes']; ?></span>
                     </div>
                     <div class="vote-buttons">
-                        <a href="../../models/complaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                        <a href="../../models/ComplaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
                            class="btn btn-success btn-sm">
                            Upvote
                         </a>
-                        <a href="../../models/complaintVote.php?action=downvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                        <a href="../../models/ComplaintVote.php?action=downvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
                            class="btn btn-danger btn-sm">
                            Downvote
                         </a>
