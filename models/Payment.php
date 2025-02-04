@@ -68,5 +68,22 @@ class Payment {
             return false;
         }
     }
+
+    public function getAllBillingRecords() {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("
+                SELECT b.*, h.firstName, h.lastName 
+                FROM billing b
+                JOIN hostellers h ON b.userID = h.userID
+                ORDER BY b.billingDate DESC
+            ");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching billing records: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 ?>

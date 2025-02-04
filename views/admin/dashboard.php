@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['email']) || $_SESSION['user_type'] != 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     header("Location: ../../auth/login.php");
     exit();
 }
@@ -58,7 +58,7 @@ $complaints = $complaintModel->getAllComplaints();
                     <div class="card-body text-center">
                         <h5 class="card-title">Payment Billing</h5>
                         <p class="card-text">Manage hostel fee payments and generate bills.</p>
-                        <a href="payment_billing.php" class="btn btn-primary w-100">Manage</a>
+                        <a href="../admin/billingManagement.php" class="btn btn-primary w-100">Manage</a>
                     </div>
                 </div>
             </div>
