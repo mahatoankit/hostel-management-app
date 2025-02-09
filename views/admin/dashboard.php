@@ -80,7 +80,7 @@ $complaints = $complaintModel->getAllComplaints();
                     <div class="card-body text-center">
                         <h5 class="card-title">Hosteller Management</h5>
                         <p class="card-text">Add or remove hostel residents.</p>
-                        <a href="hosteller_management.php" class="btn btn-primary w-100">Manage</a>
+                        <a href="../admin/hostellerManagement.php" class="btn btn-primary w-100">Manage</a>
                     </div>
                 </div>
             </div>

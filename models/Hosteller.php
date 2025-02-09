@@ -114,5 +114,46 @@ SELECT h.hostellerID, h.firstName, h.lastName, h.hostellersEmail, h.phoneNumber 
             return [];
         }
     }
+    public function addHosteller($hostellerID, $hostellersEmail, $password, $firstName, $lastName, $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("
+                INSERT INTO hostellers (
+                    hostellerID, hostellersEmail, password, firstName, lastName,
+                    phoneNumber, occupation, address, joinedDate, departureDate, dietaryPreference
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            return $stmt->execute([
+                $hostellerID, $hostellersEmail, $password, $firstName, $lastName,
+                $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error adding hosteller: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function deleteHosteller($userID) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("DELETE FROM hostellers WHERE userID = ?");
+            return $stmt->execute([$userID]);
+        } catch (PDOException $e) {
+            error_log("Error deleting hosteller: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // public function getAllHostellers() {
+    //     try {
+    //         $db = Database::getConnection();
+    //         $stmt = $db->prepare("SELECT * FROM hostellers");
+    //         $stmt->execute();
+    //         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    //     } catch (PDOException $e) {
+    //         error_log("Error fetching hostellers: " . $e->getMessage());
+    //         return [];
+    //     }
+    // }
 }
 ?>
