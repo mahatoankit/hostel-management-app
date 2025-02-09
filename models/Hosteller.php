@@ -143,17 +143,5 @@ SELECT h.hostellerID, h.firstName, h.lastName, h.hostellersEmail, h.phoneNumber 
             return false;
         }
     }
-    
-    // public function getAllHostellers() {
-    //     try {
-    //         $db = Database::getConnection();
-    //         $stmt = $db->prepare("SELECT * FROM hostellers");
-    //         $stmt->execute();
-    //         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //     } catch (PDOException $e) {
-    //         error_log("Error fetching hostellers: " . $e->getMessage());
-    //         return [];
-    //     }
-    // }
 }
 ?>
