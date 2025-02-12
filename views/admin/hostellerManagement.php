@@ -62,6 +62,7 @@ $hostellers = $hosteller->getAllHostellers();
     </style>
 </head>
 <body>
+<?php require "../../partials/_nav.php"; ?>
     <div class="container py-5">
         <div class="text-center mb-5">
             <h1 class="display-5 fw-bold">Hosteller Management</h1>
