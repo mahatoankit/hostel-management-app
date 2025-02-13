@@ -15,9 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_notice'])) {
         $title = $_POST['title'];
         $description = $_POST['description'];
-        $postedBy = $_SESSION['username']; // Assuming the admin's username is stored in the session
 
-        if ($notice->addNotice($title, $description, $postedBy)) {
+        if ($notice->addNotice($title, $description)) {
             $successMessage = "Notice posted successfully!";
         } else {
             $errorMessage = "Failed to post notice.";

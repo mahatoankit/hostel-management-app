@@ -91,7 +91,7 @@ $complaints = $complaintModel->getAllComplaints();
                     <div class="card-body text-center">
                         <h5 class="card-title">Notice Board</h5>
                         <p class="card-text">Post and manage important notices.</p>
-                        <a href="notice_posting.php" class="btn btn-primary w-100">Manage</a>
+                        <a href="../admin/notice.php" class="btn btn-primary w-100">Manage</a>
                     </div>
                 </div>
             </div>

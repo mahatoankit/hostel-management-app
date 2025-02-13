@@ -10,18 +10,16 @@ class Notice {
      * @param string $postedBy
      * @return bool
      */
-    public function addNotice($title, $description, $postedBy) {
+    public function addNotice($title, $description) {
         $sql = "
             INSERT INTO notices (
                 title, 
                 description, 
-                postedDate, 
-                postedBy
+                postedDate
             ) VALUES (
                 :title, 
                 :description, 
-                :postedDate, 
-                :postedBy
+                :postedDate
             )
         ";
         $stmt = Database::query($sql);
@@ -29,7 +27,6 @@ class Notice {
             ':title' => $title,
             ':description' => $description,
             ':postedDate' => date('Y-m-d'), // Current date
-            ':postedBy' => $postedBy
         ]);
 
         return Database::execute($stmt);
