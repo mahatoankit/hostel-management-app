@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get all rooms and their allocations
 $rooms = $room->getAllRoomsWithAllocations();
 $hostellers = $hosteller->getAllHostellers();
+$availableRooms = $room->getRoomsWithAvailableSpace(); // Fetch rooms with available space
 ?>
 
 <!DOCTYPE html>
@@ -115,16 +116,24 @@ $hostellers = $hosteller->getAllHostellers();
                                                     <div class="mb-3">
                                                         <label class="form-label">Select Hosteller</label>
                                                         <select name="userID" class="form-select" required>
-                                                            <?php foreach ($hostellers as $hosteller): ?>
-                                                                <option value="<?= $hosteller['userID'] ?>">
-                                                                    <?= htmlspecialchars($hosteller['firstName'] . ' ' . $hosteller['lastName']) ?>
+                                                            <?php foreach ($room['allocations'] as $allocation): ?>
+                                                                <option value="<?= $allocation['userID'] ?>">
+                                                                    <?= htmlspecialchars($allocation['firstName'] . ' ' . $allocation['lastName']) ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label">New Room Number</label>
-                                                        <input type="number" name="newRoomNumber" class="form-control" value="<?= $room['roomNumber'] ?>" required>
+                                                        <select name="newRoomNumber" class="form-select" required>
+                                                            <?php foreach ($availableRooms as $availableRoom): ?>
+                                                                <?php if ($availableRoom['roomNumber'] != $room['roomNumber']): ?>
+                                                                    <option value="<?= $availableRoom['roomNumber'] ?>">
+                                                                        <?= htmlspecialchars($availableRoom['roomNumber']) ?> (Available Space: <?= $availableRoom['availableSpace'] ?>)
+                                                                    </option>
+                                                                <?php endif; ?>
+                                                            <?php endforeach; ?>
+                                                        </select>
                                                     </div>
                                                     <div class="d-flex justify-content-end">
                                                         <button type="submit" name="reallocate_hosteller" class="btn btn-primary">

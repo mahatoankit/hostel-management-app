@@ -133,7 +133,11 @@ class Room {
     /**
      * Get all rooms with available space.
      *
-     * @return array
+     * This function fetches a list of rooms, their capacities, and the number of available spots in each room.
+     * It does this by joining the rooms table with a subquery that counts the number of allocations in each room.
+     * The available spots in each room are then calculated by subtracting the number of allocations from the room's capacity.
+     *
+     * @return array An array of rooms with their available space.
      */
     public function getRoomsWithAvailableSpace() {
         $sql = "
