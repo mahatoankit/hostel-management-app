@@ -72,9 +72,6 @@ $hostellers = $hosteller->getAllHostellers();
     </style>
 </head>
 <body>
-    <?php
-    echo "Hello, " . $hostellerUserID . "!"; // Display the hosteller's ID
-    ?>
 <?php require "../../partials/_nav.php"; ?>
     <div class="container py-5">
         <div class="text-center mb-5">
