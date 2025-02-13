@@ -87,7 +87,38 @@ class Room {
 
         return Database::execute($stmt);
     }
+    /**
+     * Allocate a hosteller to a room.
+     *
+     * @param int $userID The ID of the hosteller to allocate.
+     * @param int $roomNumber The room number to allocate the hosteller to.
+     * @param string $deallocationDate The date when the hosteller is expected to deallocate.
+     * @return bool Returns true if the hosteller was allocated successfully, false otherwise.
+     */
+    public function allocateHosteller($userID, $roomNumber, $deallocationDate) {
+        $sql = "
+            INSERT INTO roomAllocation (userID, roomNumber, allocationDate, deallocationDate) VALUES (?, ?, CURRENT_DATE(), ?);
+        ";
+        $stmt = Database::query($sql);
+        Database::bind($stmt, [$userID, $roomNumber, $deallocationDate]);
+        return Database::execute($stmt);    
+    }
+    
+    /**
+     * Deallocate a hosteller by removing their room allocation.
+     *
+     * @param int $userID The ID of the hosteller to deallocate.
+     * @return bool Returns true on successful deallocation, false otherwise.
+     */
 
+    public function deallocateHosteller($userID) {
+        $sql = "
+            DELETE FROM roomAllocation WHERE userID = ?;
+        ";
+        $stmt = Database::query($sql);
+        Database::bind($stmt, [$userID]);
+        return Database::execute($stmt);
+    }
     /**
      * Get the current number of allocations for a room.
      *

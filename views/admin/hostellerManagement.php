@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../models/Hosteller.php';
+require_once __DIR__ . '/../../models/Room.php'; // Include the Room class
 
 // Check if admin is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -9,6 +10,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $hosteller = new Hosteller();
+$room = new Room(); // Create an instance of the Room class
+
+// Fetch available rooms for the dropdown
+$availableRooms = $room->getRoomsWithAvailableSpace();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -24,12 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $joinedDate = $_POST['joinedDate'];
         $departureDate = $_POST['departureDate'];
         $dietaryPreference = $_POST['dietaryPreference'];
-        $roomNumber = $_POST['roomNumber']; // New field
+        $roomNumber = $_POST['roomNumber'];
 
         $hosteller->addHosteller(
             $hostellerID, $hostellersEmail, $password, $firstName, $lastName,
-            $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference, $roomNumber
+            $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference
         );
+
+        $room->allocateHosteller($hostellerID, $roomNumber, $departureDate); // Allocate the hosteller to the selected room
     } elseif (isset($_POST['delete_hosteller'])) {
         $userID = $_POST['userID'];
         $hosteller->deleteHosteller($userID);
@@ -129,7 +136,13 @@ $hostellers = $hosteller->getAllHostellers();
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Room Number</label>
-                            <input type="text" name="roomNumber" class="form-control" required>
+                            <select name="roomNumber" class="form-select" required>
+                                <?php foreach ($availableRooms as $room): ?>
+                                    <option value="<?= $room['roomNumber'] ?>">
+                                        <?= htmlspecialchars($room['roomNumber']) ?> (Available Space: <?= $room['availableSpace'] ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div class="col-md-12 d-flex justify-content-end">
                             <button type="submit" name="add_hosteller" class="btn btn-primary">
