@@ -47,7 +47,8 @@ $_SESSION['login_attempts']++;
 error_log("Login attempt: email=$email, userType=$userType");
 
 // Function to authenticate user
-function authenticateUser($conn, $email, $password, $table, $emailColumn, $passwordColumn, $redirectPath, $userType) {
+function authenticateUser($conn, $email, $password, $table, $emailColumn, $passwordColumn, $redirectPath, $userType)
+{
     $sql = "SELECT * FROM $table WHERE $emailColumn = ?";
     try {
         $stmt = $conn->prepare($sql);
@@ -66,8 +67,8 @@ function authenticateUser($conn, $email, $password, $table, $emailColumn, $passw
             print_r($user);
             echo "</pre>";
 
-            // Plain-text password comparison (to be replaced with password_verify() later)
-            if ($password == $user[$passwordColumn]) {
+            // Use password_verify() for password comparison
+            if (password_verify($password, $user[$passwordColumn])) {
                 // Set session variables
                 $_SESSION['email'] = $email;
                 $_SESSION['user_type'] = $userType;
@@ -135,4 +136,3 @@ if (!empty($errorMessage)) {
     header("Location: ../auth/login.php");
     exit();
 }
-?>
