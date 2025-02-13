@@ -107,7 +107,6 @@ $notices = $notice->getAllNotices();
                             <tr>
                                 <th>Title</th>
                                 <th>Description</th>
-                                <th>Posted By</th>
                                 <th>Posted Date</th>
                                 <th>Action</th>
                             </tr>
@@ -117,7 +116,6 @@ $notices = $notice->getAllNotices();
                                 <tr>
                                     <td><?= htmlspecialchars($notice['title']) ?></td>
                                     <td><?= htmlspecialchars($notice['description']) ?></td>
-                                    <td><?= htmlspecialchars($notice['postedBy']) ?></td>
                                     <td><?= date('M d, Y', strtotime($notice['postedDate'])) ?></td>
                                     <td>
                                         <form method="POST" class="d-inline">
