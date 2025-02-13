@@ -95,13 +95,38 @@ class Room {
      * @param string $deallocationDate The date when the hosteller is expected to deallocate.
      * @return bool Returns true if the hosteller was allocated successfully, false otherwise.
      */
-    public function allocateHosteller($userID, $roomNumber, $deallocationDate) {
+    public function allocateHosteller($userID, $roomNumber, $allocationDate = null, $deallocationDate = null) {
+        // Check if the room has available space
+        $currentAllocations = $this->getCurrentAllocations($roomNumber);
+        $roomCapacity = $this->getRoomCapacity($roomNumber);
+
+        if ($currentAllocations >= $roomCapacity) {
+            throw new Exception("Room $roomNumber is already at full capacity.");
+        }
+
+        // Insert the allocation record
         $sql = "
-            INSERT INTO roomAllocation (userID, roomNumber, allocationDate, deallocationDate) VALUES (?, ?, CURRENT_DATE(), ?);
+            INSERT INTO roomAllocation (
+                userID, 
+                roomNumber, 
+                allocationDate, 
+                deallocationDate
+            ) VALUES (
+                :userID, 
+                :roomNumber, 
+                :allocationDate, 
+                :deallocationDate
+            )
         ";
         $stmt = Database::query($sql);
-        Database::bind($stmt, [$userID, $roomNumber, $deallocationDate]);
-        return Database::execute($stmt);    
+        Database::bind($stmt, [
+            ':userID' => $userID,
+            ':roomNumber' => $roomNumber,
+            ':allocationDate' => $allocationDate,
+            ':deallocationDate' => $deallocationDate
+        ]);
+
+        return Database::execute($stmt);
     }
     
     /**

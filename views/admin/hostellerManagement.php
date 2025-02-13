@@ -36,7 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference
         );
 
-        $room->allocateHosteller($hostellerID, $roomNumber, $departureDate); // Allocate the hosteller to the selected room
+        $hostellerUserID = $hosteller->getUserIdbyHostellerID($hostellerID)['userID'];
+
+        $room->allocateHosteller($hostellerUserID, $roomNumber, $departureDate); // Allocate the hosteller to the selected room
     } elseif (isset($_POST['delete_hosteller'])) {
         $userID = $_POST['userID'];
         $hosteller->deleteHosteller($userID);
@@ -70,6 +72,9 @@ $hostellers = $hosteller->getAllHostellers();
     </style>
 </head>
 <body>
+    <?php
+    echo "Hello, " . $hostellerUserID . "!"; // Display the hosteller's ID
+    ?>
 <?php require "../../partials/_nav.php"; ?>
     <div class="container py-5">
         <div class="text-center mb-5">

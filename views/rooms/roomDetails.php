@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../models/Database.php';
 require_once __DIR__ . '/../../models/Hosteller.php';
 $db = Database::getConnection();
 $hostellerModel = new Hosteller($db);
+
 // Get current hosteller's room details
 $currentHostellerId = $_SESSION['user_id'];
 $roomDetails = $hostellerModel->getCurrentRoomDetails($currentHostellerId);
