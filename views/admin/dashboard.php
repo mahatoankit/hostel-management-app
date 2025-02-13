@@ -69,7 +69,7 @@ $complaints = $complaintModel->getAllComplaints();
                     <div class="card-body text-center">
                         <h5 class="card-title">Room Management</h5>
                         <p class="card-text">View and manage room allocations.</p>
-                        <a href="rooms.php" class="btn btn-primary w-100">Manage</a>
+                        <a href="../admin/roomManagement.php" class="btn btn-primary w-100">Manage</a>
                     </div>
                 </div>
             </div>

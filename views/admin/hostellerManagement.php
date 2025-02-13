@@ -24,10 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $joinedDate = $_POST['joinedDate'];
         $departureDate = $_POST['departureDate'];
         $dietaryPreference = $_POST['dietaryPreference'];
+        $roomNumber = $_POST['roomNumber']; // New field
 
         $hosteller->addHosteller(
             $hostellerID, $hostellersEmail, $password, $firstName, $lastName,
-            $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference
+            $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference, $roomNumber
         );
     } elseif (isset($_POST['delete_hosteller'])) {
         $userID = $_POST['userID'];
@@ -126,6 +127,10 @@ $hostellers = $hosteller->getAllHostellers();
                             <label class="form-label">Departure Date</label>
                             <input type="date" name="departureDate" class="form-control">
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Room Number</label>
+                            <input type="text" name="roomNumber" class="form-control" required>
+                        </div>
                         <div class="col-md-12 d-flex justify-content-end">
                             <button type="submit" name="add_hosteller" class="btn btn-primary">
                                 <i class="bi bi-plus-lg"></i> Add Hosteller
@@ -152,6 +157,7 @@ $hostellers = $hosteller->getAllHostellers();
                                 <th>Phone</th>
                                 <th>Occupation</th>
                                 <th>Dietary Preference</th>
+                                <th>Room Number</th> <!-- New column -->
                                 <th>Joined Date</th>
                                 <th>Action</th>
                             </tr>
@@ -165,6 +171,7 @@ $hostellers = $hosteller->getAllHostellers();
                                     <td><?= htmlspecialchars($hosteller['phoneNumber']) ?></td>
                                     <td><?= htmlspecialchars($hosteller['occupation']) ?></td>
                                     <td><?= htmlspecialchars($hosteller['dietaryPreference']) ?></td>
+                                    <td><?= htmlspecialchars($hosteller['roomNumber']) ?></td> <!-- New column -->
                                     <td><?= date('M d, Y', strtotime($hosteller['joinedDate'])) ?></td>
                                     <td>
                                         <a href="edit_hosteller.php?id=<?= $hosteller['userID'] ?>" class="btn btn-sm btn-outline-primary">
