@@ -164,7 +164,7 @@ $complaints = $complaintModel->getAllComplaints();
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="text-muted">No complaints found.</p>
+                        <p class="text-muted">oho! No complaints yet.</p>
                     <?php endif; ?>
                 </div>
             </div>
