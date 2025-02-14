@@ -16,14 +16,14 @@ $complaints = $complaintModel->getAllComplaints();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
     $complaintType = htmlspecialchars($_POST['complaintType']);
     $description = htmlspecialchars($_POST['description']);
-    $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Private
+    $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Public
     $userID = $_SESSION['user_id'];
 
     if (!empty($complaintType) && !empty($description)) {
         // Validate visibility input
         $allowedVisibilities = ['Private', 'Public'];
         if (!in_array($visibility, $allowedVisibilities)) {
-            $visibility = 'Private'; // Fallback to default
+            $visibility = 'Public'; // Fallback to default
         }
         if ($complaintModel->postComplaint($userID, $complaintType, $description, $visibility)) {
             header("Location: hosteller_dashboard.php");
@@ -33,6 +33,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         }
     } else {
         $error = "Complaint type and description are required.";
+    }
+}
+?>
+
+<!-- handling complaint update and delete -->
+<?php
+// Handle complaint update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) {
+    $complaintID = htmlspecialchars($_POST['complaintID']);
+    $complaintType = htmlspecialchars($_POST['complaintType']);
+    $description = htmlspecialchars($_POST['description']);
+    $visibility = htmlspecialchars($_POST['visibility']);
+
+    if (!empty($complaintID) && !empty($complaintType) && !empty($description)) {
+        // Validate visibility input
+        $allowedVisibilities = ['Private', 'Public'];
+        if (!in_array($visibility, $allowedVisibilities)) {
+            $visibility = 'Public'; // Fallback to default
+        }
+        if ($complaintModel->updateComplaintDetails($complaintID, $complaintType, $description, $visibility)) {
+            header("Location: hosteller_dashboard.php");
+            exit();
+        } else {
+            $error = "Failed to update complaint. Please try again.";
+        }
+    } else {
+        $error = "All fields are required.";
     }
 }
 ?>
@@ -48,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         body {
             background-color: #f8f9fa;
         }
+
         .dashboard-card {
             border: none;
             border-radius: 15px;
@@ -101,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         <h2 class="text-center mb-4">Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?>!</h2>
 
         <!-- Dashboard Cards -->
-        <div class="row g-4"> <!-- Added g-4 for gap between cards -->
+        <div class="row g-4">
             <!-- Profile Card -->
             <div class="col-md-6">
                 <div class="card dashboard-card h-100">
@@ -154,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
             <!-- Add Complaint Form -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <form method="POST" action="../../models/AddComplaint.php">
+                    <form method="POST" action="hosteller_dashboard.php">
                         <div class="mb-3">
                             <label for="complaintType" class="form-label">Complaint Type</label>
                             <input type="text" name="complaintType" class="form-control" required>
@@ -170,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                                 <option value="Private">Private</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                        <button type="submit" name="post_complaint" class="btn btn-primary">Submit Complaint</button>
                     </form>
                 </div>
             </div>
@@ -219,11 +247,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
                                     </a>
                                 </div>
                             </div>
+
+                            <!-- Edit and Delete Buttons (Only for the author) -->
+                            <?php if ($complaint['userID'] === $_SESSION['user_id']): ?>
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <!-- Edit Button (Triggers Modal) -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editComplaintModal<?php echo $complaint['complaintID']; ?>">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+
+                                    <!-- Delete Button -->
+                                    <form method="POST" action="../../models/DeleteComplaint.php" class="d-inline">
+                                        <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this complaint?')">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Edit Complaint Modal -->
+                                <div class="modal fade" id="editComplaintModal<?php echo $complaint['complaintID']; ?>" tabindex="-1" aria-labelledby="editComplaintModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editComplaintModalLabel">Edit Complaint</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="POST">
+                                                    <input type="hidden" name="update_complaint" value="1">
+                                                    <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                                    <div class="mb-3">
+                                                        <label for="complaintType" class="form-label">Complaint Title</label>
+                                                        <input type="text" name="complaintType" class="form-control" value="<?php echo htmlspecialchars($complaint['complaintType']); ?>" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="description" class="form-label">Description</label>
+                                                        <textarea name="description" class="form-control" rows="3" required><?php echo htmlspecialchars($complaint['description']); ?></textarea>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="visibility" class="form-label">Visibility</label>
+                                                        <select name="visibility" class="form-select" required>
+                                                            <option value="Public" <?php echo $complaint['visibility'] === 'Public' ? 'selected' : ''; ?>>Public</option>
+                                                            <option value="Private" <?php echo $complaint['visibility'] === 'Private' ? 'selected' : ''; ?>>Private</option>
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">Update Complaint</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="text-muted">No complaints found.</p>
+                <p class="text-muted">Be the first to post a complaint!</p>
             <?php endif; ?>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
