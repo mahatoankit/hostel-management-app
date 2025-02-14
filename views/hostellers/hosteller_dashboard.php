@@ -63,6 +63,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) 
     }
 }
 ?>
+
+<!-- handling complaint delete -->
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) {
+    $complaintID = htmlspecialchars($_POST['complaintID']);
+
+    if (!empty($complaintID)) {
+        if ($complaintModel->deleteComplaint($complaintID)) {
+            header("Location: hosteller_dashboard.php");
+            exit();
+        } else {
+            $error = "Failed to delete complaint. Please try again.";
+        }
+    } else {
+        $error = "Complaint ID is required.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -71,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hosteller Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f8f9fa;
@@ -257,8 +276,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) 
                                     </button>
 
                                     <!-- Delete Button -->
-                                    <form method="POST" action="../../models/DeleteComplaint.php" class="d-inline">
+                                    <form method="POST" class="d-inline">
                                         <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                        <input type="hidden" name="delete_complaint" value="1">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this complaint?')">
                                             <i class="bi bi-trash"></i> Delete
                                         </button>
