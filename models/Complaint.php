@@ -133,6 +133,20 @@ class Complaint {
             return false;
         }
     }
+    public function updateComplaintVisibility($complaintID, $visibility) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("
+                UPDATE complaints 
+                SET visibility = ? 
+                WHERE complaintID = ?
+            ");
+            return $stmt->execute([$visibility, $complaintID]);
+        } catch (Exception $e) {
+            error_log("Error updating complaint visibility: " . $e->getMessage());
+            return false;
+        }
+    }
 
     /**
      * Fetch complaints by a specific user.

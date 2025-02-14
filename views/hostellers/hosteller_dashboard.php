@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) 
 }
 ?>
 
-<!-- handling complaint delete -->
+<!-- handling complaint delete-->
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) {
     $complaintID = htmlspecialchars($_POST['complaintID']);
@@ -81,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) 
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 

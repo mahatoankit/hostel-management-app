@@ -9,6 +9,60 @@ require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
 ?>
+
+<!-- handling complaint delete -->
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) {
+    $complaintID = htmlspecialchars($_POST['complaintID']);
+
+    if (!empty($complaintID)) {
+        if ($complaintModel->deleteComplaint($complaintID)) {
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Failed to delete complaint. Please try again.";
+        }
+    } else {
+        $error = "Complaint ID is required.";
+    }
+}
+?>
+<!-- handling complaint update status -->
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintStatus'])) {
+    $complaintID = htmlspecialchars($_POST['complaintID']);
+    $status = htmlspecialchars($_POST['status']);
+
+    if (!empty($complaintID) && !empty($status)) {
+        if ($complaintModel->updateComplaintStatus($complaintID, $status)) {
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Failed to update complaint status. Please try again.";
+        }
+    } else {
+        $error = "Complaint ID and status are required.";
+    }
+}
+?>
+<!-- handling complaint update visibility -->
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibility'])) {
+    $complaintID = htmlspecialchars($_POST['complaintID']);
+    $visibility = htmlspecialchars($_POST['visibility']);
+
+    if (!empty($complaintID) && !empty($visibility)) {
+        if ($complaintModel->updateComplaintVisibility($complaintID, $visibility)) {
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Failed to update complaint visibility. Please try again.";
+        }
+    } else {
+        $error = "Complaint ID and visibility are required.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -136,7 +190,7 @@ $complaints = $complaintModel->getAllComplaints();
 
                                     <!-- Admin Actions -->
                                     <div class="d-flex justify-content-end gap-2">
-                                        <form method="POST" action="../../models/ComplaintStatus.php" class="d-inline">
+                                        <form method="POST" name="updateComplaintStatus" class="d-inline">
                                             <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
                                             <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="Open" <?php echo $complaint['complaintStatus'] === 'Open' ? 'selected' : ''; ?>>Open</option>
@@ -144,21 +198,25 @@ $complaints = $complaintModel->getAllComplaints();
                                                 <option value="Resolved" <?php echo $complaint['complaintStatus'] === 'Resolved' ? 'selected' : ''; ?>>Resolved</option>
                                                 <option value="Pending" <?php echo $complaint['complaintStatus'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
                                             </select>
+                                            <input type="hidden" name="updateComplaintStatus" value="1">
                                         </form>
 
-                                        <form method="POST" action="../../models/ComplaintVisibility.php" class="d-inline">
+                                        <form method="POST" name="updateComplaintVisibility" class="d-inline">
                                             <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
                                             <select name="visibility" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="Public" <?php echo $complaint['visibility'] === 'Public' ? 'selected' : ''; ?>>Public</option>
                                                 <option value="Private" <?php echo $complaint['visibility'] === 'Private' ? 'selected' : ''; ?>>Private</option>
                                             </select>
+                                            <input type="hidden" name="updateComplaintVisibility" value="1">
                                         </form>
 
-                                        <a href="../../models/DeleteComplaint.php?complaintID=<?php echo $complaint['complaintID']; ?>"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Are you sure you want to delete this complaint?')">
-                                            Delete
-                                        </a>
+                                        <form method="POST" class="d-inline" action="#">
+                                            <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                            <input type="hidden" name="delete_complaint" value="1">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this complaint?')">
+                                                Delete
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
