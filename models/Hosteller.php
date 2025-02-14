@@ -16,7 +16,7 @@ class Hosteller
         try {
             $stmt = $this->db->prepare("
                 SELECT hostellerID, firstName, lastName, email, password 
-                FROM hostellers 
+                FROM hostellers
                 WHERE hostellersEmail = ?
             ");
             $stmt->execute([$email]);
@@ -144,18 +144,18 @@ class Hosteller
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             return $stmt->execute([
-                $hostellerID,
-                $hostellersEmail,
-                $password,
-                $firstName,
-                $lastName,
-                $phoneNumber,
-                $occupation,
-                $address,
-                $joinedDate,
-                $departureDate,
-                $dietaryPreference
-            ]);
+                        $hostellerID,
+                        $hostellersEmail,
+                        $password,
+                        $firstName,
+                        $lastName,
+                        $phoneNumber,
+                        $occupation,
+                        $address,
+                        $joinedDate,
+                        $departureDate,
+                        $dietaryPreference
+                        ]);
         } catch (PDOException $e) {
             error_log("Error adding hosteller: " . $e->getMessage());
             return false;

@@ -37,6 +37,7 @@ $notices = $notice->getAllNotices();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,18 +48,21 @@ $notices = $notice->getAllNotices();
         body {
             background-color: #f8f9fa;
         }
+
         .card {
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .table-hover tbody tr:hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
+
 <body>
-<?php require "../../partials/_nav.php"; ?>
+    <?php require "../../partials/_nav.php"; ?>
     <div class="container py-5">
         <div class="text-center mb-5">
             <h1 class="display-5 fw-bold">Notice Management</h1>
