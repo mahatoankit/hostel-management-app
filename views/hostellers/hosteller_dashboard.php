@@ -137,49 +137,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
         </div>
 
         <!-- Complaint Section -->
-        <div class="complaint-section mt-5">
-            <h3>Complaints</h3>
+        <div class="container py-5">
+        <h1 class="text-center mb-4">Complaints</h1>
 
-            <!-- Post Complaint Form -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Post a Complaint</h5>
-                    <?php if (isset($error)): ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <?php echo $error; ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-                    <form method="POST">
-                        <!-- Complaint Type Field -->
-                        <div class="mb-3">
-                            <label for="complaintType" class="form-label">Complaint Type</label>
-                            <input type="text" class="form-control" id="complaintType" name="complaintType" required>
-                        </div>
-
-                        <!-- Description Field -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                        </div>
-
-                        <!-- Visibility Dropdown -->
-                        <div class="mb-3">
-                            <label for="visibility" class="form-label">Visibility</label>
-                            <select class="form-select" id="visibility" name="visibility" required>
-                                <option value="Private">Private (Only visible to admin)</option>
-                                <option value="Public" selected>Public (Visible to everyone)</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" name="post_complaint" class="btn btn-primary">Post Complaint</button>
-                    </form>
-                </div>
+        <!-- Add Complaint Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="POST" action="../../models/AddComplaint.php">
+                    <div class="mb-3">
+                        <label for="complaintType" class="form-label">Complaint Type</label>
+                        <input type="text" name="complaintType" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="visibility" class="form-label">Visibility</label>
+                        <select name="visibility" class="form-select" required>
+                            <option value="Public">Public</option>
+                            <option value="Private">Private</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                </form>
             </div>
-
-            <!-- Complaints List -->
-            <?php require "../complaints/complaintPosts.php"; ?>
         </div>
+
+        <!-- Display Complaints -->
+        <?php if (!empty($complaints)): ?>
+            <?php foreach ($complaints as $complaint): ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title"><?php echo htmlspecialchars($complaint['complaintType']); ?></h5>
+                                <p class="card-text"><?php echo htmlspecialchars($complaint['description']); ?></p>
+                                <p class="text-muted small">
+                                    Posted by: 
+                                    <?php
+                                    if ($complaint['visibility'] === 'Private') {
+                                        echo "Anonymous";
+                                    } else {
+                                        echo htmlspecialchars($complaint['firstName'] . ' ' . $complaint['lastName']);
+                                    }
+                                    ?>
+                                    on <?php echo htmlspecialchars($complaint['postingDate']); ?>
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-<?php echo $complaint['complaintStatus'] === 'Resolved' ? 'success' : 'warning'; ?>">
+                                    <?php echo htmlspecialchars($complaint['complaintStatus']); ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Voting System -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="vote-counts">
+                                <span class="text-success">Vote Count: <?php echo $complaint['voteCount']; ?></span>
+                            </div>
+                            <div class="vote-buttons">
+                                <a href="../../models/ComplaintVote.php?action=upvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                   class="btn btn-success btn-sm">
+                                   Upvote
+                                </a>
+                                <a href="../../models/ComplaintVote.php?action=downvote&complaint_id=<?php echo $complaint['complaintID']; ?>&user_id=<?php echo $_SESSION['user_id']; ?>" 
+                                   class="btn btn-danger btn-sm">
+                                   Downvote
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="text-muted">No complaints found.</p>
+        <?php endif; ?>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

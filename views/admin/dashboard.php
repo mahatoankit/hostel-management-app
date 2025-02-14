@@ -101,7 +101,62 @@ $complaints = $complaintModel->getAllComplaints();
         <div class="complaint-section mt-5">
             <h3 class="mb-4">Recent Complaints</h3>
             <div class="row">
-                <?php require "../complaints/complaintPosts.php"?>
+            <div class="container py-5">
+        <h1 class="text-center mb-4">Complaint Management</h1>
+
+        <?php if (!empty($complaints)): ?>
+            <?php foreach ($complaints as $complaint): ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title"><?php echo htmlspecialchars($complaint['complaintType']); ?></h5>
+                                <p class="card-text"><?php echo htmlspecialchars($complaint['description']); ?></p>
+                                <p class="text-muted small">
+                                    Posted by: <?php echo htmlspecialchars($complaint['firstName'] . ' ' . $complaint['lastName']); ?>
+                                    on <?php echo htmlspecialchars($complaint['postingDate']); ?>
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-<?php echo $complaint['complaintStatus'] === 'Resolved' ? 'success' : 'warning'; ?>">
+                                    <?php echo htmlspecialchars($complaint['complaintStatus']); ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Admin Actions -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <form method="POST" action="../../models/ComplaintStatus.php" class="d-inline">
+                                <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="Open" <?php echo $complaint['complaintStatus'] === 'Open' ? 'selected' : ''; ?>>Open</option>
+                                    <option value="In Progress" <?php echo $complaint['complaintStatus'] === 'In Progress' ? 'selected' : ''; ?>>In Progress</option>
+                                    <option value="Resolved" <?php echo $complaint['complaintStatus'] === 'Resolved' ? 'selected' : ''; ?>>Resolved</option>
+                                    <option value="Pending" <?php echo $complaint['complaintStatus'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                                </select>
+                            </form>
+
+                            <form method="POST" action="../../models/ComplaintVisibility.php" class="d-inline">
+                                <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                <select name="visibility" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="Public" <?php echo $complaint['visibility'] === 'Public' ? 'selected' : ''; ?>>Public</option>
+                                    <option value="Private" <?php echo $complaint['visibility'] === 'Private' ? 'selected' : ''; ?>>Private</option>
+                                </select>
+                            </form>
+
+                            <a href="../../models/DeleteComplaint.php?complaintID=<?php echo $complaint['complaintID']; ?>" 
+                               class="btn btn-danger btn-sm" 
+                               onclick="return confirm('Are you sure you want to delete this complaint?')">
+                               Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="text-muted">No complaints found.</p>
+        <?php endif; ?>
+    </div>
             </div>
         </div>
     </div>
