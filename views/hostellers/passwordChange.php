@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $storedPassword = $stmt->fetchColumn();
 
         // Verify current password
-        if (!password_verify($currentPassword, $storedPassword)) {
+        if (password_verify($currentPassword, $storedPassword)) {
             $passwordError = "Current password is incorrect.";
         } elseif ($newPassword !== $confirmPassword) {
             $passwordError = "New passwords do not match.";
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
             // Update password in the database
-            $stmt = $db->prepare("UPDATE hostellers SET password = ? WHERE hostellerID = ?");
+            $stmt = $db->prepare("UPDATE hostellers SET password = ? WHERE userID = ?");
             $stmt->execute([$hashedPassword, $_SESSION['user_id']]);
             $passwordSuccess = "Password updated successfully!";
         }
