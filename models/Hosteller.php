@@ -125,7 +125,17 @@ class Hosteller
     {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT userID, firstName, lastName FROM hostellers");
+            $stmt = $db->prepare("SELECT h.userID,
+            h.hostellersEmail,
+            h.address,
+            h.firstName,
+            h.lastName,
+            h.phoneNumber,
+            h.occupation,
+            h.dietaryPreference,
+            ra.roomNumber
+            FROM hostellers AS h LEFT JOIN roomAllocation as ra ON h.userID =ra.userID;");
+
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
