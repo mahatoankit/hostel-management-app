@@ -16,7 +16,7 @@ class Guardian {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("
-                INSERT INTO guardians 
+                INSERT INTO guardian 
                 (userID, guardianFirstName, guardianLastName, phoneNumber, relationship) 
                 VALUES (?, ?, ?, ?, ?)
             ");
@@ -36,7 +36,7 @@ class Guardian {
     public function getGuardianById($guardianID) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT * FROM guardians WHERE guardianID = ?");
+            $stmt = $db->prepare("SELECT * FROM guardian WHERE guardianID = ?");
             $stmt->execute([$guardianID]);
             return $stmt->fetch(PDO::FETCH_ASSOC); // Fetch single row
         } catch (Exception $e) {
@@ -46,19 +46,19 @@ class Guardian {
     }
 
     /**
-     * Fetch all guardians for a specific user.
+     * Fetch all guardian for a specific user.
      *
      * @param int $userID
      * @return array
      */
-    public function getGuardiansByUser($userID) {
+    public function getguardianByUser($userID) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT * FROM guardians WHERE userID = ?");
+            $stmt = $db->prepare("SELECT * FROM guardian WHERE userID = ?");
             $stmt->execute([$userID]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows
         } catch (Exception $e) {
-            error_log("Error fetching guardians by user: " . $e->getMessage());
+            error_log("Error fetching guardian by user: " . $e->getMessage());
             return [];
         }
     }
@@ -77,7 +77,7 @@ class Guardian {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("
-                UPDATE guardians 
+                UPDATE guardian 
                 SET guardianFirstName = ?, guardianLastName = ?, phoneNumber = ?, relationship = ? 
                 WHERE guardianID = ?
             ");
@@ -97,7 +97,7 @@ class Guardian {
     public function deleteGuardian($guardianID) {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("DELETE FROM guardians WHERE guardianID = ?");
+            $stmt = $db->prepare("DELETE FROM guardian WHERE guardianID = ?");
             return $stmt->execute([$guardianID]);
         } catch (Exception $e) {
             error_log("Error deleting guardian: " . $e->getMessage());
@@ -106,18 +106,18 @@ class Guardian {
     }
 
     /**
-     * Fetch all guardians.
+     * Fetch all guardian.
      *
      * @return array
      */
-    public function getAllGuardians() {
+    public function getAllguardian() {
         try {
             $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT * FROM guardians");
+            $stmt = $db->prepare("SELECT * FROM guardian");
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows
         } catch (Exception $e) {
-            error_log("Error fetching all guardians: " . $e->getMessage());
+            error_log("Error fetching all guardian: " . $e->getMessage());
             return [];
         }
     }
