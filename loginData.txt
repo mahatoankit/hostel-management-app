@@ -1,0 +1,8 @@
+Login as hosteller 
+email:ankit@gmail.com
+password:ankit
+
+
+Login as Admin
+email:admin@gmail.com
+password:admin

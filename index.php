@@ -79,7 +79,7 @@
     <!-- Hero Section -->
     <div class="hero-section">
       <div>
-        <h1>Welcome to Hospital Management App</h1>
+        <h1>Welcome to Hostel Management App</h1>
         <p>Your journey to seamless experiences starts here. Join us today!</p>
         <a href="auth/login.php" class="btn enter-button">Enter</a>
       </div>

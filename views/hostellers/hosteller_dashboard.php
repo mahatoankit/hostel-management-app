@@ -23,10 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+   // In the POST handling section, modify these lines:
     if (isset($_POST['post_complaint'])) {
-        $complaintType = trim(htmlspecialchars($_POST['complaintType']));
-        $description = trim(htmlspecialchars($_POST['description']));
-        $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Public
+        // Remove htmlspecialchars here since we'll sanitize when displaying
+        $complaintType = trim($_POST['complaintType']);
+        $description = trim($_POST['description']);
+        $visibility = $_POST['visibility'] ?? 'Public';  // Default to Public
         $userID = $_SESSION['user_id'];
 
         if (strlen($complaintType) < 1 || strlen($description) < 1) {
@@ -36,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $allowedVisibilities = ['Private', 'Public'];
             $visibility = in_array($visibility, $allowedVisibilities) ? $visibility : 'Public';
 
+            // Store raw text in database
             if ($complaintModel->postComplaint($userID, $complaintType, $description, $visibility)) {
                 header("Location: hosteller_dashboard.php?success=Complaint posted successfully!");
                 exit();
