@@ -24,3 +24,26 @@
     margin-top: 0;
     color: #555;
 }
+.password-card {
+    max-width: 600px;
+    margin: 2rem auto;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.password-header {
+    background: #007bff;
+    color: white;
+    border-radius: 15px 15px 0 0;
+    padding: 2rem;
+    text-align: center;
+}
+
+.password-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.password-details {
+    padding: 2rem;
+}
