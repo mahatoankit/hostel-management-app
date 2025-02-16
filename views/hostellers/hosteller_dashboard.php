@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../utils/csrf_token.php';
 
 // Redirect if the user is not logged in or not a hosteller
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
@@ -12,74 +13,75 @@ require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
 
+// Get success message from URL parameter
+$successMessage = htmlspecialchars($_GET['success'] ?? '');
+
 // Handle complaint posting
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['post_complaint'])) {
-    $complaintType = htmlspecialchars($_POST['complaintType']);
-    $description = htmlspecialchars($_POST['description']);
-    $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Public
-    $userID = $_SESSION['user_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        header("Location: hosteller_dashboard.php?error=Invalid request");
+        exit();
+    }
 
-    if (!empty($complaintType) && !empty($description)) {
-        // Validate visibility input
-        $allowedVisibilities = ['Private', 'Public'];
-        if (!in_array($visibility, $allowedVisibilities)) {
-            $visibility = 'Public'; // Fallback to default
-        }
-        if ($complaintModel->postComplaint($userID, $complaintType, $description, $visibility)) {
-            header("Location: hosteller_dashboard.php");
-            exit();
+    if (isset($_POST['post_complaint'])) {
+        $complaintType = trim(htmlspecialchars($_POST['complaintType']));
+        $description = trim(htmlspecialchars($_POST['description']));
+        $visibility = htmlspecialchars($_POST['visibility'] ?? 'Public');  // Default to Public
+        $userID = $_SESSION['user_id'];
+
+        if (strlen($complaintType) < 1 || strlen($description) < 1) {
+            $error = "Complaint type and description are required.";
         } else {
-            $error = "Failed to post complaint. Please try again.";
+            // Validate visibility input
+            $allowedVisibilities = ['Private', 'Public'];
+            $visibility = in_array($visibility, $allowedVisibilities) ? $visibility : 'Public';
+
+            if ($complaintModel->postComplaint($userID, $complaintType, $description, $visibility)) {
+                header("Location: hosteller_dashboard.php?success=Complaint posted successfully!");
+                exit();
+            } else {
+                $error = "Failed to post complaint. Please try again.";
+            }
         }
-    } else {
-        $error = "Complaint type and description are required.";
+    } elseif (isset($_POST['update_complaint'])) {
+        $complaintID = htmlspecialchars($_POST['complaintID']);
+        $complaintType = htmlspecialchars($_POST['complaintType']);
+        $description = htmlspecialchars($_POST['description']);
+        $visibility = htmlspecialchars($_POST['visibility']);
+
+        if (!empty($complaintID) && !empty($complaintType) && !empty($description)) {
+            // Validate visibility input
+            $allowedVisibilities = ['Private', 'Public'];
+            if (!in_array($visibility, $allowedVisibilities)) {
+                $visibility = 'Public'; // Fallback to default
+            }
+            if ($complaintModel->updateComplaintDetails($complaintID, $complaintType, $description, $visibility)) {
+                header("Location: hosteller_dashboard.php?success=Complaint updated successfully!");
+                exit();
+            } else {
+                $error = "Failed to update complaint. Please try again.";
+            }
+        } else {
+            $error = "All fields are required.";
+        }
+    } elseif (isset($_POST['delete_complaint'])) {
+        $complaintID = htmlspecialchars($_POST['complaintID']);
+
+        if (!empty($complaintID)) {
+            if ($complaintModel->deleteComplaint($complaintID)) {
+                header("Location: hosteller_dashboard.php?success=Complaint deleted successfully!");
+                exit();
+            } else {
+                $error = "Failed to delete complaint. Please try again.";
+            }
+        } else {
+            $error = "Complaint ID is required.";
+        }
     }
 }
-?>
 
-<!-- handling complaint update and delete -->
-<?php
-// Handle complaint update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_complaint'])) {
-    $complaintID = htmlspecialchars($_POST['complaintID']);
-    $complaintType = htmlspecialchars($_POST['complaintType']);
-    $description = htmlspecialchars($_POST['description']);
-    $visibility = htmlspecialchars($_POST['visibility']);
-
-    if (!empty($complaintID) && !empty($complaintType) && !empty($description)) {
-        // Validate visibility input
-        $allowedVisibilities = ['Private', 'Public'];
-        if (!in_array($visibility, $allowedVisibilities)) {
-            $visibility = 'Public'; // Fallback to default
-        }
-        if ($complaintModel->updateComplaintDetails($complaintID, $complaintType, $description, $visibility)) {
-            header("Location: hosteller_dashboard.php");
-            exit();
-        } else {
-            $error = "Failed to update complaint. Please try again.";
-        }
-    } else {
-        $error = "All fields are required.";
-    }
-}
-?>
-
-<!-- handling complaint delete-->
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) {
-    $complaintID = htmlspecialchars($_POST['complaintID']);
-
-    if (!empty($complaintID)) {
-        if ($complaintModel->deleteComplaint($complaintID)) {
-            header("Location: hosteller_dashboard.php");
-            exit();
-        } else {
-            $error = "Failed to delete complaint. Please try again.";
-        }
-    } else {
-        $error = "Complaint ID is required.";
-    }
-}
+// Add CSRF token to forms
+$csrf_token = generateCSRFToken();
 ?>
 
 <!DOCTYPE html>
@@ -148,6 +150,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) 
     <div class="container mt-5">
         <h2 class="text-center mb-4">Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?>!</h2>
 
+        <!-- Success Message -->
+        <?php if ($successMessage): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= $successMessage ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
         <!-- Dashboard Cards -->
         <div class="row g-4">
             <!-- Profile Card -->
@@ -203,6 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) 
             <div class="card mb-4">
                 <div class="card-body">
                     <form method="POST" action="hosteller_dashboard.php">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                         <div class="mb-3">
                             <label for="complaintType" class="form-label">Complaint Type</label>
                             <input type="text" name="complaintType" class="form-control" required>
@@ -278,6 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) 
 
                                     <!-- Delete Button -->
                                     <form method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                         <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
                                         <input type="hidden" name="delete_complaint" value="1">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this complaint?')">
@@ -296,6 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) 
                                             </div>
                                             <div class="modal-body">
                                                 <form method="POST">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                                     <input type="hidden" name="update_complaint" value="1">
                                                     <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
                                                     <div class="mb-3">

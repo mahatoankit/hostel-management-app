@@ -3,9 +3,10 @@ session_start();
 require_once __DIR__ . '/../../models/Hosteller.php';
 require_once __DIR__ . '/../../models/Room.php'; // Include the Room class
 require_once __DIR__ . '/../../models/Guardian.php'; // Include the Guardian class
+require_once __DIR__ . '/../../utils/csrf_token.php';
 
 // Check if admin is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
 }
@@ -19,126 +20,155 @@ $availableRooms = $room->getRoomsWithAvailableSpace();
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        header("Location: hostellerManagement.php?error=Invalid request");
+        exit();
+    }
+
     if (isset($_POST['add_hosteller'])) {
-        // Hosteller details
-        $hostellerID = $_POST['hostellerID'];
-        $hostellersEmail = $_POST['hostellersEmail'];
+        // Validate and sanitize input
+        $hostellerID = filter_input(INPUT_POST, 'hostellerID', FILTER_SANITIZE_STRING);
+        $hostellersEmail = filter_input(INPUT_POST, 'hostellersEmail', FILTER_VALIDATE_EMAIL);
+        $firstName = filter_input(INPUT_POST, 'firstName', FILTER_SANITIZE_STRING);
+        $lastName = filter_input(INPUT_POST, 'lastName', FILTER_SANITIZE_STRING);
+        $phoneNumber = filter_input(INPUT_POST, 'phoneNumber', FILTER_SANITIZE_STRING);
+        $occupation = filter_input(INPUT_POST, 'occupation', FILTER_SANITIZE_STRING);
+        $address = filter_input(INPUT_POST, 'address', FILTER_SANITIZE_STRING);
+        $joinedDate = filter_input(INPUT_POST, 'joinedDate', FILTER_SANITIZE_STRING);
+        $departureDate = filter_input(INPUT_POST, 'departureDate', FILTER_SANITIZE_STRING);
+        $dietaryPreference = filter_input(INPUT_POST, 'dietaryPreference', FILTER_SANITIZE_STRING);
+        $roomNumber = filter_input(INPUT_POST, 'roomNumber', FILTER_VALIDATE_INT);
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $firstName = $_POST['firstName'];
-        $lastName = $_POST['lastName'];
-        $phoneNumber = $_POST['phoneNumber'];
-        $occupation = $_POST['occupation'];
-        $address = $_POST['address'];
-        $joinedDate = $_POST['joinedDate'];
-        $departureDate = $_POST['departureDate'];
-        $dietaryPreference = $_POST['dietaryPreference'];
-        $roomNumber = $_POST['roomNumber'];
 
-        // Add hosteller
-        $hosteller->addHosteller(
-            $hostellerID,
-            $hostellersEmail,
-            $password,
-            $firstName,
-            $lastName,
-            $phoneNumber,
-            $occupation,
-            $address,
-            $joinedDate,
-            $departureDate,
-            $dietaryPreference
-        );
-
-        // Get the userID of the newly added hosteller
-        $hostellerUserID = $hosteller->getUserIdbyHostellerID($hostellerID)['userID'];
-
-        // Allocate the hosteller to the selected room
-        $room->allocateHosteller($hostellerUserID, $roomNumber, $departureDate);
-
-        // Add guardian details (if provided)
-        if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName']) && !empty($_POST['guardianPhoneNumber'])) {
-            $guardianFirstName = $_POST['guardianFirstName'];
-            $guardianLastName = $_POST['guardianLastName'];
-            $guardianPhoneNumber = $_POST['guardianPhoneNumber'];
-            $relationship = $_POST['relationship'] ?? null;
-
-            $guardian->addGuardian(
-                $hostellerUserID,
-                $guardianFirstName,
-                $guardianLastName,
-                $guardianPhoneNumber,
-                $relationship
+        if (!$hostellersEmail || !$hostellerID || !$firstName || !$lastName || !$roomNumber) {
+            $error = "Please fill in all required fields with valid data.";
+        } else {
+            // Add hosteller with validated data
+            $result = $hosteller->addHosteller(
+                $hostellerID,
+                $hostellersEmail,
+                $password,
+                $firstName,
+                $lastName,
+                $phoneNumber,
+                $occupation,
+                $address,
+                $joinedDate,
+                $departureDate,
+                $dietaryPreference
             );
+
+            if ($result) {
+                $hostellerUserID = $hosteller->getUserIdbyHostellerID($hostellerID)['userID'];
+
+                // Validate guardian data if provided
+                if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName'])) {
+                    $guardianFirstName = filter_input(INPUT_POST, 'guardianFirstName', FILTER_SANITIZE_STRING);
+                    $guardianLastName = filter_input(INPUT_POST, 'guardianLastName', FILTER_SANITIZE_STRING);
+                    $guardianPhoneNumber = filter_input(INPUT_POST, 'guardianPhoneNumber', FILTER_SANITIZE_STRING);
+                    $relationship = filter_input(INPUT_POST, 'relationship', FILTER_SANITIZE_STRING);
+
+                    if ($guardianFirstName && $guardianLastName) {
+                        $guardian->addGuardian(
+                            $hostellerUserID,
+                            $guardianFirstName,
+                            $guardianLastName,
+                            $guardianPhoneNumber,
+                            $relationship
+                        );
+                    }
+                }
+
+                // Allocate room
+                $room->allocateHosteller($hostellerUserID, $roomNumber, $departureDate);
+                header("Location: hostellerManagement.php?success=Hosteller added successfully");
+                exit();
+            }
         }
     } elseif (isset($_POST['edit_hosteller'])) {
-        // Hosteller details
-        $userID = $_POST['userID'];
-        $hostellerID = $_POST['hostellerID'];
-        $hostellersEmail = $_POST['hostellersEmail'];
-        $firstName = $_POST['firstName'];
-        $lastName = $_POST['lastName'];
-        $phoneNumber = $_POST['phoneNumber'];
-        $occupation = $_POST['occupation'];
-        $address = $_POST['address'];
-        $joinedDate = $_POST['joinedDate'];
-        $departureDate = $_POST['departureDate'];
-        $dietaryPreference = $_POST['dietaryPreference'];
-        $roomNumber = $_POST['roomNumber'];
+        // Similar validation for edit operation
+        $userID = filter_input(INPUT_POST, 'userID', FILTER_VALIDATE_INT);
+        $hostellerID = filter_input(INPUT_POST, 'hostellerID', FILTER_SANITIZE_STRING);
+        $hostellersEmail = filter_input(INPUT_POST, 'hostellersEmail', FILTER_VALIDATE_EMAIL);
+        $firstName = filter_input(INPUT_POST, 'firstName', FILTER_SANITIZE_STRING);
+        $lastName = filter_input(INPUT_POST, 'lastName', FILTER_SANITIZE_STRING);
+        $phoneNumber = filter_input(INPUT_POST, 'phoneNumber', FILTER_SANITIZE_STRING);
+        $occupation = filter_input(INPUT_POST, 'occupation', FILTER_SANITIZE_STRING);
+        $address = filter_input(INPUT_POST, 'address', FILTER_SANITIZE_STRING);
+        $joinedDate = filter_input(INPUT_POST, 'joinedDate', FILTER_SANITIZE_STRING);
+        $departureDate = filter_input(INPUT_POST, 'departureDate', FILTER_SANITIZE_STRING);
+        $dietaryPreference = filter_input(INPUT_POST, 'dietaryPreference', FILTER_SANITIZE_STRING);
+        $roomNumber = filter_input(INPUT_POST, 'roomNumber', FILTER_VALIDATE_INT);
 
-        // Update hosteller details
-        $result = $hosteller->updateHosteller(
-            $userID,
-            $hostellerID,
-            $hostellersEmail,
-            $firstName,
-            $lastName,
-            $phoneNumber,
-            $occupation,
-            $address,
-            $joinedDate,
-            $departureDate,
-            $dietaryPreference
-        );
+        if (!$userID || !$hostellersEmail || !$hostellerID) {
+            $error = "Invalid data provided for editing.";
+        } else {
+            // Process edit with validated data
+            $result = $hosteller->updateHosteller(
+                $userID,
+                $hostellerID,
+                $hostellersEmail,
+                $firstName,
+                $lastName,
+                $phoneNumber,
+                $occupation,
+                $address,
+                $joinedDate,
+                $departureDate,
+                $dietaryPreference
+            );
 
-        if ($result) {
-            // Update guardian details (if provided)
-            if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName']) && !empty($_POST['guardianPhoneNumber'])) {
-                $guardianFirstName = $_POST['guardianFirstName'];
-                $guardianLastName = $_POST['guardianLastName'];
-                $guardianPhoneNumber = $_POST['guardianPhoneNumber'];
-                $relationship = $_POST['relationship'] ?? null;
+            if ($result) {
+                // Update guardian details (if provided)
+                if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName'])) {
+                    $guardianFirstName = filter_input(INPUT_POST, 'guardianFirstName', FILTER_SANITIZE_STRING);
+                    $guardianLastName = filter_input(INPUT_POST, 'guardianLastName', FILTER_SANITIZE_STRING);
+                    $guardianPhoneNumber = filter_input(INPUT_POST, 'guardianPhoneNumber', FILTER_SANITIZE_STRING);
+                    $relationship = filter_input(INPUT_POST, 'relationship', FILTER_SANITIZE_STRING);
 
-                // Check if guardian already exists
-                $existingGuardian = $guardian->getGuardianByUser($userID);
-                if ($existingGuardian) {
-                    // Update existing guardian
-                    $guardian->updateGuardian(
-                        $userID, // Changed from $existingGuardian['guardianID']
-                        $guardianFirstName,
-                        $guardianLastName,
-                        $guardianPhoneNumber,
-                        $relationship
-                    );
-                } else {
-                    // Add new guardian
-                    $guardian->addGuardian(
-                        $userID,
-                        $guardianFirstName,
-                        $guardianLastName,
-                        $guardianPhoneNumber,
-                        $relationship
-                    );
+                    // Check if guardian already exists
+                    $existingGuardian = $guardian->getGuardianByUser($userID);
+                    if ($existingGuardian) {
+                        // Update existing guardian
+                        $guardian->updateGuardian(
+                            $userID, // Changed from $existingGuardian['guardianID']
+                            $guardianFirstName,
+                            $guardianLastName,
+                            $guardianPhoneNumber,
+                            $relationship
+                        );
+                    } else {
+                        // Add new guardian
+                        $guardian->addGuardian(
+                            $userID,
+                            $guardianFirstName,
+                            $guardianLastName,
+                            $guardianPhoneNumber,
+                            $relationship
+                        );
+                    }
                 }
             }
         }
     } elseif (isset($_POST['delete_hosteller'])) {
-        $userID = $_POST['userID'];
-        $hosteller->deleteHosteller($userID);
+        $userID = filter_input(INPUT_POST, 'userID', FILTER_VALIDATE_INT);
+
+        if (!$userID) {
+            $error = "Invalid user ID for deletion.";
+        } else {
+            if ($hosteller->deleteHosteller($userID)) {
+                header("Location: hostellerManagement.php?success=Hosteller deleted successfully");
+                exit();
+            }
+        }
     }
 }
 
 // Get all hostellers
 $hostellers = $hosteller->getAllHostellers();
+
+// Generate CSRF token for forms
+$csrf_token = generateCSRFToken();
 ?>
 
 <!DOCTYPE html>
@@ -182,6 +212,7 @@ $hostellers = $hosteller->getAllHostellers();
             </div>
             <div class="card-body">
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                     <div class="row g-3">
                         <!-- Hosteller Details -->
                         <div class="col-md-3">
@@ -312,6 +343,7 @@ $hostellers = $hosteller->getAllHostellers();
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form method="POST" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <input type="hidden" name="userID" value="<?= $hosteller['userID'] ?>">
                                             <button type="submit" name="delete_hosteller" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
                                                 <i class="bi bi-trash"></i>
@@ -337,6 +369,7 @@ $hostellers = $hosteller->getAllHostellers();
                 </div>
                 <div class="modal-body">
                     <form id="editHostellerForm" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                         <input type="hidden" name="userID" id="editUserID">
                         <div class="row g-3">
                             <!-- Hosteller Details -->

@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../utils/csrf_token.php';
+
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
     header("Location: ../../auth/login.php");
     exit();
@@ -8,60 +10,61 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 'admin') {
 require_once __DIR__ . '/../../models/Complaint.php';
 $complaintModel = new Complaint();
 $complaints = $complaintModel->getAllComplaints();
-?>
 
-<!-- handling complaint delete -->
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_complaint'])) {
-    $complaintID = htmlspecialchars($_POST['complaintID']);
+$successMessage = htmlspecialchars($_GET['success'] ?? '');
 
-    if (!empty($complaintID)) {
-        if ($complaintModel->deleteComplaint($complaintID)) {
-            header("Location: dashboard.php");
-            exit();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        header("Location: dashboard.php?error=Invalid request");
+        exit();
+    }
+
+    if (isset($_POST['delete_complaint'])) {
+        $complaintID = filter_input(INPUT_POST, 'complaintID', FILTER_VALIDATE_INT);
+
+        if ($complaintID === false || $complaintID === null) {
+            $error = "Invalid complaint ID.";
         } else {
-            $error = "Failed to delete complaint. Please try again.";
+            if ($complaintModel->deleteComplaint($complaintID)) {
+                header("Location: dashboard.php?success=Complaint deleted successfully!");
+                exit();
+            } else {
+                $error = "Failed to delete complaint. Please try again.";
+            }
         }
-    } else {
-        $error = "Complaint ID is required.";
+    } elseif (isset($_POST['updateComplaintStatus'])) {
+        $complaintID = htmlspecialchars($_POST['complaintID']);
+        $status = htmlspecialchars($_POST['status']);
+
+        if (!empty($complaintID) && !empty($status)) {
+            if ($complaintModel->updateComplaintStatus($complaintID, $status)) {
+                header("Location: dashboard.php?success=Status updated successfully!");
+                exit();
+            } else {
+                $error = "Failed to update complaint status. Please try again.";
+            }
+        } else {
+            $error = "Complaint ID and status are required.";
+        }
+    } elseif (isset($_POST['updateComplaintVisibility'])) {
+        $complaintID = htmlspecialchars($_POST['complaintID']);
+        $visibility = htmlspecialchars($_POST['visibility']);
+
+        if (!empty($complaintID) && !empty($visibility)) {
+            if ($complaintModel->updateComplaintVisibility($complaintID, $visibility)) {
+                header("Location: dashboard.php?success=Visibility updated successfully!");
+                exit();
+            } else {
+                $error = "Failed to update complaint visibility. Please try again.";
+            }
+        } else {
+            $error = "Complaint ID and visibility are required.";
+        }
     }
 }
-?>
-<!-- handling complaint update status -->
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintStatus'])) {
-    $complaintID = htmlspecialchars($_POST['complaintID']);
-    $status = htmlspecialchars($_POST['status']);
 
-    if (!empty($complaintID) && !empty($status)) {
-        if ($complaintModel->updateComplaintStatus($complaintID, $status)) {
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Failed to update complaint status. Please try again.";
-        }
-    } else {
-        $error = "Complaint ID and status are required.";
-    }
-}
-?>
-<!-- handling complaint update visibility -->
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibility'])) {
-    $complaintID = htmlspecialchars($_POST['complaintID']);
-    $visibility = htmlspecialchars($_POST['visibility']);
-
-    if (!empty($complaintID) && !empty($visibility)) {
-        if ($complaintModel->updateComplaintVisibility($complaintID, $visibility)) {
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Failed to update complaint visibility. Please try again.";
-        }
-    } else {
-        $error = "Complaint ID and visibility are required.";
-    }
-}
+// Add CSRF token to forms
+$csrf_token = generateCSRFToken();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -113,6 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibi
     <?php require "../../partials/_nav.php"; ?>
     <div class="container mt-5">
         <h2 class="text-center mb-4">Admin Dashboard</h2>
+
+        <?php if ($successMessage): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= $successMessage ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
         <!-- Management Cards -->
         <div class="row g-4">
@@ -192,6 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibi
                                     <div class="d-flex justify-content-end gap-2">
                                         <form method="POST" name="updateComplaintStatus" class="d-inline">
                                             <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="Open" <?php echo $complaint['complaintStatus'] === 'Open' ? 'selected' : ''; ?>>Open</option>
                                                 <option value="In Progress" <?php echo $complaint['complaintStatus'] === 'In Progress' ? 'selected' : ''; ?>>In Progress</option>
@@ -203,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibi
 
                                         <form method="POST" name="updateComplaintVisibility" class="d-inline">
                                             <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <select name="visibility" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="Public" <?php echo $complaint['visibility'] === 'Public' ? 'selected' : ''; ?>>Public</option>
                                                 <option value="Private" <?php echo $complaint['visibility'] === 'Private' ? 'selected' : ''; ?>>Private</option>
@@ -212,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateComplaintVisibi
 
                                         <form method="POST" class="d-inline" action="#">
                                             <input type="hidden" name="complaintID" value="<?php echo $complaint['complaintID']; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <input type="hidden" name="delete_complaint" value="1">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this complaint?')">
                                                 Delete
