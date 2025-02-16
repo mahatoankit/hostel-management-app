@@ -171,6 +171,41 @@ class Hosteller
             return false;
         }
     }
+    public function updateHosteller($userID, $hostellerID, $hostellersEmail, $firstName, $lastName, $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("
+                UPDATE hostellers SET
+                    hostellerID = ?,
+                    hostellersEmail = ?,
+                    firstName = ?,
+                    lastName = ?,
+                    phoneNumber = ?,
+                    occupation = ?,
+                    address = ?,
+                    joinedDate = ?,
+                    departureDate = ?,
+                    dietaryPreference = ?,
+                WHERE userID = ?
+            ");
+            return $stmt->execute([
+                $hostellerID,
+                $hostellersEmail,
+                $firstName,
+                $lastName,
+                $phoneNumber,
+                $occupation,
+                $address,
+                $joinedDate,
+                $departureDate,
+                $dietaryPreference,
+                $userID
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error updating hosteller: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function deleteHosteller($userID)
     {

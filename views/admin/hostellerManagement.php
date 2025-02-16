@@ -70,6 +70,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $relationship
             );
         }
+    } elseif (isset($_POST['edit_hosteller'])) {
+        // Hosteller details
+        $userID = $_POST['userID'];
+        $hostellerID = $_POST['hostellerID'];
+        $hostellersEmail = $_POST['hostellersEmail'];
+        $firstName = $_POST['firstName'];
+        $lastName = $_POST['lastName'];
+        $phoneNumber = $_POST['phoneNumber'];
+        $occupation = $_POST['occupation'];
+        $address = $_POST['address'];
+        $joinedDate = $_POST['joinedDate'];
+        $departureDate = $_POST['departureDate'];
+        $dietaryPreference = $_POST['dietaryPreference'];
+        $roomNumber = $_POST['roomNumber'];
+
+        // Update hosteller details
+        $hosteller->updateHosteller(
+            $userID,
+            $hostellerID,
+            $hostellersEmail,
+            $firstName,
+            $lastName,
+            $phoneNumber,
+            $occupation,
+            $address,
+            $joinedDate,
+            $departureDate,
+            $dietaryPreference,
+            $roomNumber
+        );
+
+        // Update guardian details (if provided)
+        if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName']) && !empty($_POST['guardianPhoneNumber'])) {
+            $guardianFirstName = $_POST['guardianFirstName'];
+            $guardianLastName = $_POST['guardianLastName'];
+            $guardianPhoneNumber = $_POST['guardianPhoneNumber'];
+            $relationship = $_POST['relationship'] ?? null;
+
+            // Check if guardian already exists
+            $existingGuardian = $guardian->getGuardianByUser($userID);
+            if ($existingGuardian) {
+                // Update existing guardian
+                $guardian->updateGuardian(
+                    $existingGuardian['guardianID'],
+                    $guardianFirstName,
+                    $guardianLastName,
+                    $guardianPhoneNumber,
+                    $relationship
+                );
+            } else {
+                // Add new guardian
+                $guardian->addGuardian(
+                    $userID,
+                    $guardianFirstName,
+                    $guardianLastName,
+                    $guardianPhoneNumber,
+                    $relationship
+                );
+            }
+        }
     } elseif (isset($_POST['delete_hosteller'])) {
         $userID = $_POST['userID'];
         $hosteller->deleteHosteller($userID);
@@ -247,7 +307,7 @@ $hostellers = $hosteller->getAllHostellers();
                                     <td><?= htmlspecialchars($hosteller['roomNumber']) ?></td>
                                     <td><?= date('M d, Y', strtotime($hosteller['joinedDate'])) ?></td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-primary edit-hosteller-btn">
+                                        <button type="button" class="btn btn-sm btn-outline-primary edit-hosteller-btn" data-user-id="<?= $hosteller['userID'] ?>">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form method="POST" class="d-inline">
@@ -266,158 +326,157 @@ $hostellers = $hosteller->getAllHostellers();
         </div>
     </div>
 
-<!-- Edit Hosteller Modal -->
-<div class="modal fade" id="editHostellerModal" tabindex="-1" aria-labelledby="editHostellerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editHostellerModalLabel">Edit Hosteller</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editHostellerForm" method="POST">
-                    <input type="hidden" name="userID" id="editUserID">
-                    <div class="row g-3">
-                        <!-- Hosteller Details -->
-                        <div class="col-md-6">
-                            <label class="form-label">Hosteller ID</label>
-                            <input type="text" name="hostellerID" id="editHostellerID" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="hostellersEmail" id="editHostellersEmail" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">First Name</label>
-                            <input type="text" name="firstName" id="editFirstName" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" name="lastName" id="editLastName" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Phone Number</label>
-                            <input type="text" name="phoneNumber" id="editPhoneNumber" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Occupation</label>
-                            <input type="text" name="occupation" id="editOccupation" class="form-control">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Address</label>
-                            <textarea name="address" id="editAddress" class="form-control" rows="2"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Joined Date</label>
-                            <input type="date" name="joinedDate" id="editJoinedDate" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Departure Date</label>
-                            <input type="date" name="departureDate" id="editDepartureDate" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Dietary Preference</label>
-                            <select name="dietaryPreference" id="editDietaryPreference" class="form-select" required>
-                                <option value="Vegetarian">Vegetarian</option>
-                                <option value="Non-Vegetarian">Non-Vegetarian</option>
-                                <option value="Vegan">Vegan</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Room Number</label>
-                            <select name="roomNumber" id="editRoomNumber" class="form-select" required>
-                                <?php foreach ($availableRooms as $room): ?>
-                                    <option value="<?= $room['roomNumber'] ?>">
-                                        <?= htmlspecialchars($room['roomNumber']) ?> (Available Space: <?= $room['availableSpace'] ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+    <!-- Edit Hosteller Modal -->
+    <div class="modal fade" id="editHostellerModal" tabindex="-1" aria-labelledby="editHostellerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editHostellerModalLabel">Edit Hosteller</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editHostellerForm" method="POST">
+                        <input type="hidden" name="userID" id="editUserID">
+                        <div class="row g-3">
+                            <!-- Hosteller Details -->
+                            <div class="col-md-6">
+                                <label class="form-label">Hosteller ID</label>
+                                <input type="text" name="hostellerID" id="editHostellerID" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="hostellersEmail" id="editHostellersEmail" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="firstName" id="editFirstName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="lastName" id="editLastName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" name="phoneNumber" id="editPhoneNumber" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Occupation</label>
+                                <input type="text" name="occupation" id="editOccupation" class="form-control">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Address</label>
+                                <textarea name="address" id="editAddress" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Joined Date</label>
+                                <input type="date" name="joinedDate" id="editJoinedDate" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Departure Date</label>
+                                <input type="date" name="departureDate" id="editDepartureDate" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dietary Preference</label>
+                                <select name="dietaryPreference" id="editDietaryPreference" class="form-select" required>
+                                    <option value="Vegetarian">Vegetarian</option>
+                                    <option value="Non-Vegetarian">Non-Vegetarian</option>
+                                    <option value="Vegan">Vegan</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Room Number</label>
+                                <select name="roomNumber" id="editRoomNumber" class="form-select" required>
+                                    <?php foreach ($availableRooms as $room): ?>
+                                        <option value="<?= $room['roomNumber'] ?>">
+                                            <?= htmlspecialchars($room['roomNumber']) ?> (Available Space: <?= $room['availableSpace'] ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-                        <!-- Guardian Details -->
-                        <div class="col-md-12">
-                            <h5 class="mt-4">Guardian Details</h5>
+                            <!-- Guardian Details -->
+                            <div class="col-md-12">
+                                <h5 class="mt-4">Guardian Details</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Guardian First Name</label>
+                                <input type="text" name="guardianFirstName" id="editGuardianFirstName" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Guardian Last Name</label>
+                                <input type="text" name="guardianLastName" id="editGuardianLastName" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Guardian Phone Number</label>
+                                <input type="text" name="guardianPhoneNumber" id="editGuardianPhoneNumber" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Relationship</label>
+                                <input type="text" name="relationship" id="editRelationship" class="form-control">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Guardian First Name</label>
-                            <input type="text" name="guardianFirstName" id="editGuardianFirstName" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Guardian Last Name</label>
-                            <input type="text" name="guardianLastName" id="editGuardianLastName" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Guardian Phone Number</label>
-                            <input type="text" name="guardianPhoneNumber" id="editGuardianPhoneNumber" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Relationship</label>
-                            <input type="text" name="relationship" id="editRelationship" class="form-control">
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" form="editHostellerForm" name="edit_hosteller" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="editHostellerForm" name="edit_hosteller" class="btn btn-primary">Save changes</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add event listeners to all edit buttons
-        document.querySelectorAll('.edit-hosteller-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                // Fetch hosteller data from the row
-                const row = this.closest('tr');
-                const hostellerID = row.querySelector('td:nth-child(1)').innerText;
-                const name = row.querySelector('td:nth-child(2)').innerText.split(' ');
-                const firstName = name[0];
-                const lastName = name[1];
-                const email = row.querySelector('td:nth-child(3)').innerText;
-                const phone = row.querySelector('td:nth-child(4)').innerText;
-                const occupation = row.querySelector('td:nth-child(5)').innerText;
-                const dietaryPreference = row.querySelector('td:nth-child(6)').innerText;
-                const roomNumber = row.querySelector('td:nth-child(7)').innerText;
-                const joinedDate = row.querySelector('td:nth-child(8)').innerText;
-                const userID = row.querySelector('input[name="userID"]').value;
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                // Fetch guardian data (if available)
-                fetch(`../../models/GetGuardianByUserID.php?userID=${userID}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            document.getElementById('editGuardianFirstName').value = data.guardianFirstName || '';
-                            document.getElementById('editGuardianLastName').value = data.guardianLastName || '';
-                            document.getElementById('editGuardianPhoneNumber').value = data.phoneNumber || '';
-                            document.getElementById('editRelationship').value = data.relationship || '';
-                        }
-                    })
-                    .catch(error => console.error('Error fetching guardian data:', error));
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.edit-hosteller-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userID = this.getAttribute('data-user-id');
+                    console.log('Fetching data for userID:', userID);
 
-                // Populate the modal form fields
-                document.getElementById('editUserID').value = userID;
-                document.getElementById('editHostellerID').value = hostellerID;
-                document.getElementById('editFirstName').value = firstName;
-                document.getElementById('editLastName').value = lastName;
-                document.getElementById('editHostellersEmail').value = email;
-                document.getElementById('editPhoneNumber').value = phone;
-                document.getElementById('editOccupation').value = occupation;
-                document.getElementById('editDietaryPreference').value = dietaryPreference;
-                document.getElementById('editRoomNumber').value = roomNumber;
-                document.getElementById('editJoinedDate').value = new Date(joinedDate).toISOString().split('T')[0];
+                    // Fetch hosteller data
+                    fetch(`../../models/GetHostellerData.php?userID=${userID}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Received hosteller data:', data);
+                            if (data && !data.error) {
+                                // Populate hosteller fields
+                                Object.keys(data).forEach(key => {
+                                    const element = document.getElementById('edit' + key.charAt(0).toUpperCase() + key.slice(1));
+                                    if (element) {
+                                        element.value = data[key] || '';
+                                    }
+                                });
 
-                // Show the modal
-                const modal = new bootstrap.Modal(document.getElementById('editHostellerModal'));
-                modal.show();
+                                // Fetch guardian data
+                                return fetch(`../../models/GetGuardianData.php?userID=${userID}`);
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(guardianData => {
+                            console.log('Received guardian data:', guardianData);
+                            if (guardianData && !guardianData.error) {
+                                // Populate guardian fields
+                                document.getElementById('editGuardianFirstName').value = guardianData.guardianFirstName || '';
+                                document.getElementById('editGuardianLastName').value = guardianData.guardianLastName || '';
+                                document.getElementById('editGuardianPhoneNumber').value = guardianData.phoneNumber || '';
+                                document.getElementById('editRelationship').value = guardianData.relationship || '';
+                            }
+
+                            // Show the modal after all data is populated
+                            const modal = new bootstrap.Modal(document.getElementById('editHostellerModal'));
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error fetching data. Please try again.');
+                        });
+                });
             });
         });
-    });
-</script>
+    </script>
 </body>
 
 </html>
