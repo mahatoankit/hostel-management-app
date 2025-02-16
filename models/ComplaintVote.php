@@ -1,16 +1,14 @@
-<?php
-require_once __DIR__ . '/Database.php';
+<?php 
+require_once __DIR__ . '/Database.php'; 
 
-class ComplaintVote
-{
+class ComplaintVote { 
     private $voteID;
     private $complaintID;
     private $userID;
     private $voteDate;
     private $totalVotes;
 
-    public function __construct($voteID = null, $complaintID = null, $userID = null, $voteDate = null, $totalVotes = 0)
-    {
+    public function __construct($voteID = null, $complaintID = null, $userID = null, $voteDate = null, $totalVotes = 0) {
         $this->voteID = $voteID;
         $this->complaintID = $complaintID;
         $this->userID = $userID;
@@ -19,35 +17,19 @@ class ComplaintVote
     }
 
     // Getters
-    public function getId()
-    {
-        return $this->voteID;
-    }
-    public function getComplaintId()
-    {
-        return $this->complaintID;
-    }
-    public function getUserId()
-    {
-        return $this->userID;
-    }
-    public function getVoteDate()
-    {
-        return $this->voteDate;
-    }
-    public function getTotalVotes()
-    {
-        return $this->totalVotes;
-    }
+    public function getId() { return $this->voteID; }
+    public function getComplaintId() { return $this->complaintID; }
+    public function getUserId() { return $this->userID; }
+    public function getVoteDate() { return $this->voteDate; }
+    public function getTotalVotes() { return $this->totalVotes; }
 
     // Upvote functionality
-    public function upVote()
-    {
+    public function upVote() {
         $db = Database::getConnection();
-
+        
         try {
             $db->beginTransaction();
-
+            
             $stmt = $db->prepare("SELECT voteType FROM complaintVotes 
                                 WHERE complaintID = ? AND userID = ?
                                 FOR UPDATE");
@@ -59,36 +41,37 @@ class ComplaintVote
                     // Remove upvote
                     $db->prepare("DELETE FROM complaintVotes 
                                 WHERE complaintID = ? AND userID = ?")
-                        ->execute([$this->complaintID, $this->userID]);
+                       ->execute([$this->complaintID, $this->userID]);
                     $db->prepare("UPDATE complaints 
                                 SET voteCount = voteCount - 1 
                                 WHERE complaintID = ?")
-                        ->execute([$this->complaintID]);
+                       ->execute([$this->complaintID]);
                 } else {
                     // Change from Downvote to Upvote
                     $db->prepare("UPDATE complaintVotes 
                                 SET voteType = 'Upvote' 
                                 WHERE complaintID = ? AND userID = ?")
-                        ->execute([$this->complaintID, $this->userID]);
+                       ->execute([$this->complaintID, $this->userID]);
                     $db->prepare("UPDATE complaints 
                                 SET voteCount = voteCount + 2 
                                 WHERE complaintID = ?")
-                        ->execute([$this->complaintID]);
+                       ->execute([$this->complaintID]);
                 }
             } else {
                 // Add new upvote
                 $db->prepare("INSERT INTO complaintVotes 
                             (complaintID, userID, voteType) 
                             VALUES (?, ?, 'Upvote')")
-                    ->execute([$this->complaintID, $this->userID]);
+                   ->execute([$this->complaintID, $this->userID]);
                 $db->prepare("UPDATE complaints 
                             SET voteCount = voteCount + 1 
                             WHERE complaintID = ?")
-                    ->execute([$this->complaintID]);
+                   ->execute([$this->complaintID]);
             }
-
+            
             $db->commit();
             return true;
+            
         } catch (PDOException $e) {
             $db->rollBack();
             if ($e->errorInfo[1] == 1062) {
@@ -101,13 +84,12 @@ class ComplaintVote
     }
 
     // Downvote functionality
-    public function downVote()
-    {
+    public function downVote() {
         $db = Database::getConnection();
-
+        
         try {
             $db->beginTransaction();
-
+            
             $stmt = $db->prepare("SELECT voteType FROM complaintVotes 
                                 WHERE complaintID = ? AND userID = ?
                                 FOR UPDATE");
@@ -119,36 +101,37 @@ class ComplaintVote
                     // Remove downvote
                     $db->prepare("DELETE FROM complaintVotes 
                                 WHERE complaintID = ? AND userID = ?")
-                        ->execute([$this->complaintID, $this->userID]);
+                       ->execute([$this->complaintID, $this->userID]);
                     $db->prepare("UPDATE complaints 
                                 SET voteCount = voteCount + 1 
                                 WHERE complaintID = ?")
-                        ->execute([$this->complaintID]);
+                       ->execute([$this->complaintID]);
                 } else {
                     // Change from Upvote to Downvote
                     $db->prepare("UPDATE complaintVotes 
                                 SET voteType = 'Downvote' 
                                 WHERE complaintID = ? AND userID = ?")
-                        ->execute([$this->complaintID, $this->userID]);
+                       ->execute([$this->complaintID, $this->userID]);
                     $db->prepare("UPDATE complaints 
                                 SET voteCount = voteCount - 2 
                                 WHERE complaintID = ?")
-                        ->execute([$this->complaintID]);
+                       ->execute([$this->complaintID]);
                 }
             } else {
                 // Add new downvote
                 $db->prepare("INSERT INTO complaintVotes 
                             (complaintID, userID, voteType) 
                             VALUES (?, ?, 'Downvote')")
-                    ->execute([$this->complaintID, $this->userID]);
+                   ->execute([$this->complaintID, $this->userID]);
                 $db->prepare("UPDATE complaints 
                             SET voteCount = voteCount - 1 
                             WHERE complaintID = ?")
-                    ->execute([$this->complaintID]);
+                   ->execute([$this->complaintID]);
             }
-
+            
             $db->commit();
             return true;
+            
         } catch (PDOException $e) {
             $db->rollBack();
             if ($e->errorInfo[1] == 1062) {
@@ -160,8 +143,7 @@ class ComplaintVote
         }
     }
 
-    public static function getTotalVotesForComplaint($complaintID)
-    {
+    public static function getTotalVotesForComplaint($complaintID) {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("SELECT voteCount FROM complaints WHERE complaintID = ?");
@@ -173,8 +155,7 @@ class ComplaintVote
             return 0;
         }
     }
-    public function getUserVotes($userID)
-    {
+    public function getUserVotes($userID) {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("
@@ -183,12 +164,13 @@ class ComplaintVote
                 WHERE userID = ?
             ");
             $stmt->execute([$userID]);
-
+            
             $votes = [];
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $votes[$row['complaintID']] = $row['voteType'];
             }
             return $votes;
+            
         } catch (PDOException $e) {
             error_log("Error fetching user votes: " . $e->getMessage());
             return [];
@@ -198,30 +180,18 @@ class ComplaintVote
 
 // Handle voting request
 session_start();
-require_once __DIR__ . '/../utils/csrf_token.php';
-
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'hosteller') {
     header("Location: ../../auth/login.php");
     exit();
 }
 
-if (!validateCSRFToken($_GET['csrf_token'] ?? '')) {
-    header("Location: ../views/hostellers/hosteller_dashboard.php?error=Invalid request");
-    exit();
-}
-
 if (isset($_GET['action'], $_GET['complaint_id'], $_GET['user_id'])) {
-    $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
-    $complaintId = filter_input(INPUT_GET, 'complaint_id', FILTER_VALIDATE_INT);
-    $userId = filter_input(INPUT_GET, 'user_id', FILTER_VALIDATE_INT);
-
-    if (!$complaintId || !$userId || !in_array($action, ['upvote', 'downvote'])) {
-        header("Location: ../views/hostellers/hosteller_dashboard.php?error=Invalid parameters");
-        exit();
-    }
+    $action = $_GET['action'];
+    $complaintId = (int)$_GET['complaint_id'];
+    $userId = (int)$_GET['user_id'];
 
     $vote = new ComplaintVote(null, $complaintId, $userId);
-
+    
     try {
         $success = false;
         if ($action === 'upvote') {
@@ -229,11 +199,9 @@ if (isset($_GET['action'], $_GET['complaint_id'], $_GET['user_id'])) {
         } elseif ($action === 'downvote') {
             $success = $vote->downVote();
         }
-
+        
         if ($success) {
-            $action = $_GET['action'];
-            $message = $action === 'upvote' ? 'Vote added successfully!' : 'Vote removed successfully!';
-            header("Location: ../views/hostellers/hosteller_dashboard.php?success=" . urlencode($message));
+            header("Location: ../views/hostellers/hosteller_dashboard.php");
         } else {
             header("Location: ../views/hostellers/hosteller_dashboard.php?error=vote_failed");
         }
