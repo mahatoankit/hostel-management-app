@@ -16,6 +16,7 @@ $paymentHistory = $payment->getPaymentHistory($userID);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,34 +27,41 @@ $paymentHistory = $payment->getPaymentHistory($userID);
         body {
             background-color: #f8f9fa;
         }
+
         .card {
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s;
         }
+
         .card:hover {
             transform: translateY(-5px);
         }
+
         .payment-status {
             font-size: 0.9rem;
             padding: 4px 8px;
             border-radius: 12px;
         }
+
         .payment-status.Paid {
             background-color: #d1fae5;
             color: #065f46;
         }
+
         .payment-status.Unpaid {
             background-color: #fee2e2;
             color: #991b1b;
         }
+
         .payment-status.Pending {
             background-color: #fef3c7;
             color: #92400e;
         }
     </style>
 </head>
+
 <body>
     <?php require "../../partials/_nav.php"; ?>
     <div class="container py-5">
@@ -130,4 +138,8 @@ $paymentHistory = $payment->getPaymentHistory($userID);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+<footer>
+    <?php require "../../partials/_footer.php"; ?>
+</footer>
+
 </html>

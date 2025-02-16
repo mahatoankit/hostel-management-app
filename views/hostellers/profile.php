@@ -247,4 +247,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.getElementById('cancelChangeBtn').addEventListener('click', resetForm);
     </script>
 </body>
+<footer>
+    <?php require "../../partials/_footer.php"; ?>
+</footer>
+
 </html>

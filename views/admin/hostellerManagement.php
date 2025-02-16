@@ -512,5 +512,8 @@ $csrf_token = generateCSRFToken();
         });
     </script>
 </body>
+<footer>
+    <?php require "../../partials/_footer.php"; ?>
+</footer>
 
 </html>
