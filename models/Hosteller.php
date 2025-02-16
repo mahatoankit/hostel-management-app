@@ -154,29 +154,30 @@ class Hosteller
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             return $stmt->execute([
-                        $hostellerID,
-                        $hostellersEmail,
-                        $password,
-                        $firstName,
-                        $lastName,
-                        $phoneNumber,
-                        $occupation,
-                        $address,
-                        $joinedDate,
-                        $departureDate,
-                        $dietaryPreference
-                        ]);
+                $hostellerID,
+                $hostellersEmail,
+                $password,
+                $firstName,
+                $lastName,
+                $phoneNumber,
+                $occupation,
+                $address,
+                $joinedDate,
+                $departureDate,
+                $dietaryPreference
+            ]);
         } catch (PDOException $e) {
             error_log("Error adding hosteller: " . $e->getMessage());
             return false;
         }
     }
-    public function updateHosteller($userID, $hostellerID, $hostellersEmail, $firstName, $lastName, $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference) {
+    public function updateHosteller($userID, $hostellerID, $hostellersEmail, $firstName, $lastName, $phoneNumber, $occupation, $address, $joinedDate, $departureDate, $dietaryPreference)
+    {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("
-                UPDATE hostellers SET
-                    hostellerID = ?,
+                UPDATE hostellers 
+                SET hostellerID = ?,
                     hostellersEmail = ?,
                     firstName = ?,
                     lastName = ?,
@@ -185,10 +186,11 @@ class Hosteller
                     address = ?,
                     joinedDate = ?,
                     departureDate = ?,
-                    dietaryPreference = ?,
+                    dietaryPreference = ?
                 WHERE userID = ?
             ");
-            return $stmt->execute([
+
+            $params = [
                 $hostellerID,
                 $hostellersEmail,
                 $firstName,
@@ -200,7 +202,16 @@ class Hosteller
                 $departureDate,
                 $dietaryPreference,
                 $userID
-            ]);
+            ];
+
+            // Debug information
+            error_log("Updating hosteller with params: " . print_r($params, true));
+
+            if (!$stmt->execute($params)) {
+                error_log("Execute failed: " . implode(", ", $stmt->errorInfo()));
+                return false;
+            }
+            return true;
         } catch (PDOException $e) {
             error_log("Error updating hosteller: " . $e->getMessage());
             return false;

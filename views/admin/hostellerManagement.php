@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $roomNumber = $_POST['roomNumber'];
 
         // Update hosteller details
-        $hosteller->updateHosteller(
+        $result = $hosteller->updateHosteller(
             $userID,
             $hostellerID,
             $hostellersEmail,
@@ -97,37 +97,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $address,
             $joinedDate,
             $departureDate,
-            $dietaryPreference,
-            $roomNumber
+            $dietaryPreference
         );
 
-        // Update guardian details (if provided)
-        if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName']) && !empty($_POST['guardianPhoneNumber'])) {
-            $guardianFirstName = $_POST['guardianFirstName'];
-            $guardianLastName = $_POST['guardianLastName'];
-            $guardianPhoneNumber = $_POST['guardianPhoneNumber'];
-            $relationship = $_POST['relationship'] ?? null;
+        if ($result) {
+            // Update guardian details (if provided)
+            if (!empty($_POST['guardianFirstName']) && !empty($_POST['guardianLastName']) && !empty($_POST['guardianPhoneNumber'])) {
+                $guardianFirstName = $_POST['guardianFirstName'];
+                $guardianLastName = $_POST['guardianLastName'];
+                $guardianPhoneNumber = $_POST['guardianPhoneNumber'];
+                $relationship = $_POST['relationship'] ?? null;
 
-            // Check if guardian already exists
-            $existingGuardian = $guardian->getGuardianByUser($userID);
-            if ($existingGuardian) {
-                // Update existing guardian
-                $guardian->updateGuardian(
-                    $existingGuardian['guardianID'],
-                    $guardianFirstName,
-                    $guardianLastName,
-                    $guardianPhoneNumber,
-                    $relationship
-                );
-            } else {
-                // Add new guardian
-                $guardian->addGuardian(
-                    $userID,
-                    $guardianFirstName,
-                    $guardianLastName,
-                    $guardianPhoneNumber,
-                    $relationship
-                );
+                // Check if guardian already exists
+                $existingGuardian = $guardian->getGuardianByUser($userID);
+                if ($existingGuardian) {
+                    // Update existing guardian
+                    $guardian->updateGuardian(
+                        $userID, // Changed from $existingGuardian['guardianID']
+                        $guardianFirstName,
+                        $guardianLastName,
+                        $guardianPhoneNumber,
+                        $relationship
+                    );
+                } else {
+                    // Add new guardian
+                    $guardian->addGuardian(
+                        $userID,
+                        $guardianFirstName,
+                        $guardianLastName,
+                        $guardianPhoneNumber,
+                        $relationship
+                    );
+                }
             }
         }
     } elseif (isset($_POST['delete_hosteller'])) {

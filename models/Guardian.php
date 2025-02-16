@@ -51,15 +51,15 @@ class Guardian {
      * @param int $userID
      * @return array
      */
-    public function getguardianByUser($userID) {
+    public function getGuardianByUser($userID) {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("SELECT * FROM guardian WHERE userID = ?");
             $stmt->execute([$userID]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows
+            return $stmt->fetch(PDO::FETCH_ASSOC); // Change fetchAll to fetch
         } catch (Exception $e) {
             error_log("Error fetching guardian by user: " . $e->getMessage());
-            return [];
+            return null;
         }
     }
 
@@ -73,15 +73,15 @@ class Guardian {
      * @param string $relationship
      * @return bool
      */
-    public function updateGuardian($guardianID, $guardianFirstName, $guardianLastName, $phoneNumber, $relationship = null) {
+    public function updateGuardian($userID, $guardianFirstName, $guardianLastName, $phoneNumber, $relationship = null) {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("
                 UPDATE guardian 
                 SET guardianFirstName = ?, guardianLastName = ?, phoneNumber = ?, relationship = ? 
-                WHERE guardianID = ?
+                WHERE userID = ?
             ");
-            return $stmt->execute([$guardianFirstName, $guardianLastName, $phoneNumber, $relationship, $guardianID]);
+            return $stmt->execute([$guardianFirstName, $guardianLastName, $phoneNumber, $relationship, $userID]);
         } catch (Exception $e) {
             error_log("Error updating guardian: " . $e->getMessage());
             return false;
